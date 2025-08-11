@@ -111,7 +111,7 @@ export default function Home() {
                           fallbackContent={
                             <div className="w-full h-full bg-gradient-to-br from-purple-400 to-pink-400 rounded-lg flex items-center justify-center">
                               <div className="text-center text-white p-8">
-                                <h4 className="text-3xl font-bold mb-6">"Art is Alchemy"</h4>
+                                <h4 className="text-3xl font-bold mb-6">&quot;Art is Alchemy&quot;</h4>
                                 <p className="text-xl mb-6">Upload featured artwork</p>
                                 <p className="text-lg opacity-90">in admin panel</p>
                               </div>
@@ -140,7 +140,7 @@ export default function Home() {
               <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/20">
                 <h4 className="text-xl font-semibold text-black mb-4">About This Piece</h4>
                 <p className="text-black/80 leading-relaxed">
-                  "Art is Alchemy" represents the transformative power of artistic creation. This mixed media piece combines traditional techniques with modern experimentation, embodying the philosophy that art has the ability to transmute ordinary materials into something extraordinary.
+                  &quot;Art is Alchemy&quot; represents the transformative power of artistic creation. This mixed media piece combines traditional techniques with modern experimentation, embodying the philosophy that art has the ability to transmute ordinary materials into something extraordinary.
                 </p>
               </div>
             </div>
@@ -309,18 +309,18 @@ export default function Home() {
               
               {/* Right Side - Collaboration Content */}
               <div className="space-y-6">
-                <h3 className="text-3xl font-bold text-black">Let's Create Together</h3>
+                <h3 className="text-3xl font-bold text-black">Let&apos;s Create Together</h3>
                 <div className="space-y-4 text-lg text-black/80 leading-relaxed">
                   <p>
-                    Collaboration is at the heart of artistic innovation. I'm always excited to work with other creatives, 
+                    Collaboration is at the heart of artistic innovation. I&apos;m always excited to work with other creatives, 
                     galleries, and organizations to bring unique visions to life.
                   </p>
                   <p>
-                    Whether it's joint exhibitions, mixed media projects, or creative partnerships, 
+                    Whether it&apos;s joint exhibitions, mixed media projects, or creative partnerships, 
                     I believe the best art often comes from working together.
                   </p>
                   <p>
-                    <strong>Interested in collaborating?</strong> Let's discuss how we can combine our creative energies 
+                    <strong>Interested in collaborating?</strong> Let&apos;s discuss how we can combine our creative energies 
                     to create something truly special.
                   </p>
                 </div>
@@ -443,9 +443,9 @@ export default function Home() {
           <div className="container mx-auto px-8">
             <div className="text-center mb-12">
               <h2 className="text-4xl font-bold text-black mb-6">Get In Touch</h2>
-              <p className="text-xl text-black/80 max-w-3xl mx-auto">
-                Ready to start a conversation about art, collaborations, or commissions? I'd love to hear from you.
-              </p>
+                                      <p className="text-xl text-black/80 max-w-3xl mx-auto">
+                          Ready to start a conversation about art, collaborations, or commissions? I&apos;d love to hear from you.
+                        </p>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 items-start">

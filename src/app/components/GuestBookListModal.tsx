@@ -118,7 +118,7 @@ export default function GuestBookListModal({ onClose }: GuestBookListModalProps)
             <div className="text-center py-12">
               <div className="text-6xl mb-4">📝</div>
               <div className="text-xl font-medium text-gray-600 mb-2">No signatures yet</div>
-              <div className="text-gray-500">When visitors sign your guest book, they'll appear here</div>
+              <div className="text-gray-500">When visitors sign your guest book, they&apos;ll appear here</div>
             </div>
           ) : (
             <div className="space-y-4">
@@ -134,7 +134,7 @@ export default function GuestBookListModal({ onClose }: GuestBookListModalProps)
                       </div>
                       {entry.message && (
                         <p className="text-gray-700 text-sm leading-relaxed">
-                          "{entry.message}"
+                          &quot;{entry.message}&quot;
                         </p>
                       )}
                     </div>

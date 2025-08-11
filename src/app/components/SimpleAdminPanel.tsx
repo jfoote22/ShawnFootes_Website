@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useContext } from 'react';
+import { useState, useEffect, useContext, useCallback } from 'react';
 import { AuthContext } from '@/lib/contexts/AuthContext';
 import { collection, getDocs, deleteDoc, doc, query, where, orderBy } from 'firebase/firestore';
 import { ref, deleteObject } from 'firebase/storage';
@@ -55,7 +55,7 @@ export default function SimpleAdminPanel({ isOpen, onClose }: AdminPanelProps) {
         loadGuestBookStats();
       }
     }
-  }, [activeTab, storeSubcategory, featuredSubcategory, collaborationsSubcategory, aboutSubcategory, isOpen, isAdmin]);
+  }, [activeTab, storeSubcategory, featuredSubcategory, collaborationsSubcategory, aboutSubcategory, isOpen, isAdmin, loadImages]);
 
   const loadWebsiteBackground = () => {
     const currentBackground = localStorage.getItem('websiteBackgroundImage');
@@ -138,7 +138,7 @@ export default function SimpleAdminPanel({ isOpen, onClose }: AdminPanelProps) {
     }
   }, [isOpen, onClose]);
 
-  const loadImages = async () => {
+  const loadImages = useCallback(async () => {
     setLoading(true);
     try {
       let q = query(
@@ -177,7 +177,7 @@ export default function SimpleAdminPanel({ isOpen, onClose }: AdminPanelProps) {
     } finally {
       setLoading(false);
     }
-  };
+  }, [activeTab, storeSubcategory, featuredSubcategory, collaborationsSubcategory, aboutSubcategory]);
 
   const handleDeleteImage = async (image: ImageData) => {
     if (!confirm(`Are you sure you want to delete "${image.originalName}"?\n\nThis action cannot be undone.`)) return;

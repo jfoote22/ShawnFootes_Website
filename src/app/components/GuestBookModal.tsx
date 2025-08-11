@@ -154,7 +154,7 @@ export default function GuestBookModal({ onClose }: GuestBookModalProps) {
               Thanks for visiting, <strong>{entries[0]?.name}</strong>!
             </p>
             <p className="text-sm text-black/60">
-              You're visitor #{entries.length} in my guest book.
+              You&apos;re visitor #{entries.length} in my guest book.
             </p>
           </div>
         )}
