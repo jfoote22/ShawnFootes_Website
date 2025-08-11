@@ -8,6 +8,7 @@ import { auth } from "../firebase/firebase";
 interface AuthContextType {
   user: User | null;
   loading: boolean;
+  isAdmin: boolean;
   signInWithGoogle: () => Promise<void>;
   signOut: () => Promise<void>;
 }
@@ -15,17 +16,23 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType>({
   user: null,
   loading: true,
+  isAdmin: false,
   signInWithGoogle: async () => {},
   signOut: async () => {},
 });
 
+// Admin email addresses - only these can access admin features
+const ADMIN_EMAILS = ['3foote@gmail.com', 'justinfoote@gmail.com'];
+
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
+  const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged((user) => {
       setUser(user);
+      setIsAdmin(user ? ADMIN_EMAILS.includes(user.email || '') : false);
       setLoading(false);
     });
 
@@ -35,7 +42,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const signInWithGoogle = async () => {
     const provider = new GoogleAuthProvider();
     try {
-      await signInWithPopup(auth, provider);
+      const result = await signInWithPopup(auth, provider);
+      const userEmail = result.user.email;
+      
+      // Check if user is an admin
+      if (!userEmail || !ADMIN_EMAILS.includes(userEmail)) {
+        // Sign out non-admin users immediately
+        await firebaseSignOut(auth);
+        alert('Access denied. This login is restricted to administrators only.');
+        return;
+      }
+      
+      console.log('Admin login successful:', userEmail);
     } catch (error) {
       console.error("Error signing in with Google", error);
     }
@@ -50,7 +68,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, signInWithGoogle, signOut: signOutUser }}>
+    <AuthContext.Provider value={{ user, loading, isAdmin, signInWithGoogle, signOut: signOutUser }}>
       {children}
     </AuthContext.Provider>
   );
