@@ -46,6 +46,47 @@ export default function SimpleAdminPanel({ isOpen, onClose }: AdminPanelProps) {
   const [guestBookListOpen, setGuestBookListOpen] = useState(false);
   const [guestBookStats, setGuestBookStats] = useState({ totalVisitors: 0, recentVisitors: 0 });
 
+  const loadImages = useCallback(async () => {
+    setLoading(true);
+    try {
+      let q = query(
+        collection(db, 'images'), 
+        where('category', '==', activeTab)
+      );
+      
+      const querySnapshot = await getDocs(q);
+      let imageList = querySnapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      })) as ImageData[];
+
+      // Filter by subcategory if it's the store or featured tab
+      if (activeTab === 'store' && storeSubcategory) {
+        imageList = imageList.filter(img => img.subcategory === storeSubcategory);
+      } else if (activeTab === 'featured' && featuredSubcategory) {
+        imageList = imageList.filter(img => img.subcategory === featuredSubcategory);
+      } else if (activeTab === 'collaborations' && collaborationsSubcategory) {
+        imageList = imageList.filter(img => img.subcategory === collaborationsSubcategory);
+      } else if (activeTab === 'about' && aboutSubcategory) {
+        imageList = imageList.filter(img => img.subcategory === aboutSubcategory);
+      }
+
+      // Sort by upload date (newest first)
+      imageList.sort((a, b) => {
+        const dateA = a.uploadedAt?.toDate?.() || new Date(a.uploadedAt) || new Date(0);
+        const dateB = b.uploadedAt?.toDate?.() || new Date(b.uploadedAt) || new Date(0);
+        return dateB.getTime() - dateA.getTime();
+      });
+
+      setImages(imageList);
+    } catch (error) {
+      console.error('Error loading images:', error);
+      alert('Error loading images. Check console for details.');
+    } finally {
+      setLoading(false);
+    }
+  }, [activeTab, storeSubcategory, featuredSubcategory, collaborationsSubcategory, aboutSubcategory]);
+
   // Load images when tab changes
   useEffect(() => {
     if (isOpen && isAdmin) {
@@ -137,47 +178,6 @@ export default function SimpleAdminPanel({ isOpen, onClose }: AdminPanelProps) {
       return () => document.removeEventListener('keydown', handleKeyPress);
     }
   }, [isOpen, onClose]);
-
-  const loadImages = useCallback(async () => {
-    setLoading(true);
-    try {
-      let q = query(
-        collection(db, 'images'), 
-        where('category', '==', activeTab)
-      );
-      
-      const querySnapshot = await getDocs(q);
-      let imageList = querySnapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data()
-      })) as ImageData[];
-
-      // Filter by subcategory if it's the store or featured tab
-      if (activeTab === 'store' && storeSubcategory) {
-        imageList = imageList.filter(img => img.subcategory === storeSubcategory);
-      } else if (activeTab === 'featured' && featuredSubcategory) {
-        imageList = imageList.filter(img => img.subcategory === featuredSubcategory);
-      } else if (activeTab === 'collaborations' && collaborationsSubcategory) {
-        imageList = imageList.filter(img => img.subcategory === collaborationsSubcategory);
-      } else if (activeTab === 'about' && aboutSubcategory) {
-        imageList = imageList.filter(img => img.subcategory === aboutSubcategory);
-      }
-
-      // Sort by upload date (newest first)
-      imageList.sort((a, b) => {
-        const dateA = a.uploadedAt?.toDate?.() || new Date(a.uploadedAt) || new Date(0);
-        const dateB = b.uploadedAt?.toDate?.() || new Date(b.uploadedAt) || new Date(0);
-        return dateB.getTime() - dateA.getTime();
-      });
-
-      setImages(imageList);
-    } catch (error) {
-      console.error('Error loading images:', error);
-      alert('Error loading images. Check console for details.');
-    } finally {
-      setLoading(false);
-    }
-  }, [activeTab, storeSubcategory, featuredSubcategory, collaborationsSubcategory, aboutSubcategory]);
 
   const handleDeleteImage = async (image: ImageData) => {
     if (!confirm(`Are you sure you want to delete "${image.originalName}"?\n\nThis action cannot be undone.`)) return;
