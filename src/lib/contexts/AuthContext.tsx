@@ -37,7 +37,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       return;
     }
 
-    const unsubscribe = auth.onAuthStateChanged((user) => {
+    const unsubscribe = auth.onAuthStateChanged((user: User | null) => {
       setUser(user);
       setIsAdmin(user ? ADMIN_EMAILS.includes(user.email || '') : false);
       setLoading(false);
