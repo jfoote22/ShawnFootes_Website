@@ -30,6 +30,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
+    // Check if Firebase Auth is available
+    if (!auth) {
+      console.log('Firebase Auth not initialized');
+      setLoading(false);
+      return;
+    }
+
     const unsubscribe = auth.onAuthStateChanged((user) => {
       setUser(user);
       setIsAdmin(user ? ADMIN_EMAILS.includes(user.email || '') : false);
@@ -40,6 +47,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const signInWithGoogle = async () => {
+    if (!auth) {
+      alert('Authentication not available. Please check your configuration.');
+      return;
+    }
+
     const provider = new GoogleAuthProvider();
     try {
       const result = await signInWithPopup(auth, provider);
@@ -60,6 +72,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const signOutUser = async () => {
+    if (!auth) {
+      console.log('Auth not available for sign out');
+      return;
+    }
+
     try {
       await firebaseSignOut(auth);
     } catch (error) {

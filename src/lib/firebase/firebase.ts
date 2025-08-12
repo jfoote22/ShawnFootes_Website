@@ -12,10 +12,24 @@ const firebaseConfig = {
   appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
 };
 
-// Initialize Firebase
-const app = getApps().length ? getApp() : initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const db = getFirestore(app);
-const storage = getStorage(app);
+// Check if Firebase config is available (prevents build-time errors)
+const isFirebaseConfigValid = firebaseConfig.apiKey && 
+  firebaseConfig.authDomain && 
+  firebaseConfig.projectId && 
+  firebaseConfig.storageBucket && 
+  firebaseConfig.appId;
+
+// Initialize Firebase only if config is valid
+let app: any = null;
+let auth: any = null;
+let db: any = null;
+let storage: any = null;
+
+if (isFirebaseConfigValid) {
+  app = getApps().length ? getApp() : initializeApp(firebaseConfig);
+  auth = getAuth(app);
+  db = getFirestore(app);
+  storage = getStorage(app);
+}
 
 export { app, auth, db, storage };

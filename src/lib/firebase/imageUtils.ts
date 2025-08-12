@@ -22,6 +22,11 @@ export async function uploadImage(
 ): Promise<ImageData> {
   console.log(`Starting upload: ${file.name} to ${category}${subcategory ? `/${subcategory}` : ''}`);
   
+  // Check if Firebase is available
+  if (!storage || !db) {
+    throw new Error('Firebase not initialized - check your environment variables');
+  }
+  
   try {
     const timestamp = Date.now();
     const filename = `${timestamp}_${file.name}`;
@@ -69,6 +74,12 @@ export async function getImagesByCategory(
   category: string, 
   subcategory?: string
 ): Promise<ImageData[]> {
+  // Check if Firebase is available
+  if (!db) {
+    console.log('Firebase not initialized, returning empty array');
+    return [];
+  }
+  
   const imagesCollection = collection(db, 'images');
   const snapshot = await getDocs(imagesCollection);
   

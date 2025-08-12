@@ -30,6 +30,14 @@ export default function Store() {
   const loadStoreImages = async () => {
     try {
       setLoading(true);
+      
+      // Check if Firebase is available
+      if (!db) {
+        console.log('Firebase not initialized, skipping image load');
+        setLoading(false);
+        return;
+      }
+      
       const q = query(
         collection(db, 'images'),
         where('category', '==', 'store')
