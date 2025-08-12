@@ -2,9 +2,16 @@ import { NextResponse } from "next/server";
 import fs from "fs";
 import OpenAI from "openai";
 
-const openai = new OpenAI();
-
 export async function POST(req: Request) {
+  // Check if API key is available
+  if (!process.env.OPENAI_API_KEY) {
+    return NextResponse.json(
+      { error: "OpenAI API key not configured" },
+      { status: 500 }
+    );
+  }
+
+  const openai = new OpenAI();
   const body = await req.json();
 
   const base64Audio = body.audio;
