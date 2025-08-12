@@ -368,7 +368,7 @@ export default function Home() {
                 {/* Right Side - Bio Text */}
                 <div>
                   <p className="text-xl text-black/90 leading-relaxed">
-                    From his Tacoma, WA studio, Shawn Foote makes art that weaves together nature, spirituality, and historical themes. His creations emerge through a thoughtful process, blending curiosity, technical skill, and experimentation, each work taking on its own vibrant essence. Foote now inspires as an art teacher in Spanaway. His resourceful approach to materials mirrors a personal journey of transformation. To Foote, "Art is Alchemy."
+                    From his Tacoma, WA studio, Shawn Foote makes art that weaves together nature, spirituality, and historical themes. His creations emerge through a thoughtful process, blending curiosity, technical skill, and experimentation, each work taking on its own vibrant essence. Foote now inspires as an art teacher in Spanaway. His resourceful approach to materials mirrors a personal journey of transformation. To Foote, &quot;Art is Alchemy.&quot;
                   </p>
                 </div>
               </div>
