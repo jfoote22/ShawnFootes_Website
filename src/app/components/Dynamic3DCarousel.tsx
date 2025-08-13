@@ -1,7 +1,8 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { useImageRotation } from '@/lib/hooks/useImageRotation';
+import { useState, useEffect, useCallback } from 'react';
+import { collection, getDocs, query, where } from 'firebase/firestore';
+import { db } from '@/lib/firebase/firebase';
 
 interface Dynamic3DCarouselProps {
   category: string;
@@ -11,6 +12,22 @@ interface Dynamic3DCarouselProps {
   className?: string;
 }
 
+interface ImageData {
+  id: string;
+  url: string;
+  filename: string;
+  originalName: string;
+  customName?: string;
+  price?: string;
+  description?: string;
+  sortOrder?: number;
+  category: string;
+  subcategory?: string;
+  uploadedAt: any;
+  size: number;
+  type: string;
+}
+
 export default function Dynamic3DCarousel({
   category,
   subcategory,
@@ -18,29 +35,83 @@ export default function Dynamic3DCarousel({
   intervalMs = 4000,
   className = ""
 }: Dynamic3DCarouselProps) {
-  const { currentImages, loading, hasImages } = useImageRotation({
-    category,
-    subcategory,
-    intervalMs,
-    randomCount: count
-  });
-
+  const [images, setImages] = useState<ImageData[]>([]);
+  const [loading, setLoading] = useState(true);
   const [currentIndex, setCurrentIndex] = useState(0);
 
-  // Auto-rotate the carousel
+  const loadImages = useCallback(async () => {
+    try {
+      setLoading(true);
+      
+      if (!db) {
+        console.log('Firebase not initialized');
+        setLoading(false);
+        return;
+      }
+      
+      const q = query(
+        collection(db, 'images'),
+        where('category', '==', category),
+        ...(subcategory ? [where('subcategory', '==', subcategory)] : [])
+      );
+      
+      const querySnapshot = await getDocs(q);
+      const imageList = querySnapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      })) as ImageData[];
+
+      // Sort by custom order first, then by upload date
+      imageList.sort((a, b) => {
+        // If both have sortOrder, use that
+        if (a.sortOrder !== undefined && b.sortOrder !== undefined) {
+          return a.sortOrder - b.sortOrder;
+        }
+        // If only one has sortOrder, prioritize it
+        if (a.sortOrder !== undefined) return -1;
+        if (b.sortOrder !== undefined) return 1;
+        // If neither has sortOrder, sort by upload date (newest first)
+        const dateA = a.uploadedAt?.toDate?.() || new Date(a.uploadedAt) || new Date(0);
+        const dateB = b.uploadedAt?.toDate?.() || new Date(b.uploadedAt) || new Date(0);
+        return dateB.getTime() - dateA.getTime();
+      });
+
+      // Take the requested count and duplicate if needed for 3D effect
+      const selectedImages = imageList.slice(0, count);
+      if (selectedImages.length > 0 && selectedImages.length < count) {
+        // Duplicate images to fill the carousel if we don't have enough
+        while (selectedImages.length < count) {
+          selectedImages.push(...imageList.slice(0, count - selectedImages.length));
+        }
+      }
+
+      setImages(selectedImages);
+    } catch (error) {
+      console.error('Error loading images:', error);
+    } finally {
+      setLoading(false);
+    }
+  }, [category, subcategory, count]);
+
+  // Load images once and keep them stable
   useEffect(() => {
-    if (!hasImages || currentImages.length === 0) return;
+    loadImages();
+  }, [loadImages]);
+
+  // Auto-rotate the carousel index only - images stay stable
+  useEffect(() => {
+    if (images.length === 0) return;
 
     const interval = setInterval(() => {
-      setCurrentIndex(prev => (prev + 1) % currentImages.length);
+      setCurrentIndex(prev => (prev + 1) % images.length);
     }, intervalMs);
 
     return () => clearInterval(interval);
-  }, [hasImages, currentImages.length, intervalMs]);
+  }, [images.length, intervalMs]);
 
   if (loading) {
     return (
-      <div className={`relative h-80 flex items-center justify-center ${className}`}>
+      <div className={`relative h-96 flex items-center justify-center ${className}`}>
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-black mx-auto mb-4"></div>
           <p className="text-black/60">Loading gallery...</p>
@@ -49,9 +120,9 @@ export default function Dynamic3DCarousel({
     );
   }
 
-  if (!hasImages || currentImages.length === 0) {
+  if (!loading && images.length === 0) {
     return (
-      <div className={`relative h-80 flex items-center justify-center ${className}`}>
+      <div className={`relative h-96 flex items-center justify-center ${className}`}>
         <div className="text-center">
           <div className="text-6xl mb-4">🎨</div>
           <p className="text-xl font-medium text-black/60 mb-2">No gallery images yet</p>
@@ -61,32 +132,26 @@ export default function Dynamic3DCarousel({
     );
   }
 
-  // Ensure we have enough images for the 3D effect
-  const displayImages = [...currentImages];
-  while (displayImages.length < count) {
-    displayImages.push(...currentImages.slice(0, count - displayImages.length));
-  }
-
   return (
-    <div className={`relative h-80 ${className}`}>
+         <div className={`relative h-96 ${className}`}>
       <div className="carousel-3d-container">
         <div 
           className="carousel-3d"
           style={{
-            transform: `rotateY(${-currentIndex * (360 / displayImages.length)}deg)`
+            transform: `rotateY(${-currentIndex * (360 / images.length)}deg)`
           }}
         >
-          {displayImages.slice(0, count).map((image, index) => {
-            const angle = (360 / count) * index;
+          {images.map((image, index) => {
+            const angle = (360 / images.length) * index;
             const isActive = index === currentIndex;
             
             return (
               <div
                 key={`${image.id}-${index}`}
                 className="carousel-3d-item"
-                style={{
-                  transform: `rotateY(${angle}deg) translateZ(200px)`,
-                }}
+                                 style={{
+                   transform: `rotateY(${angle}deg) translateZ(300px)`,
+                 }}
               >
                 <div className={`carousel-3d-image ${isActive ? 'active' : ''}`}>
                   <img
@@ -111,20 +176,20 @@ export default function Dynamic3DCarousel({
         </div>
       </div>
 
-      {/* Navigation Dots */}
-      <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex space-x-2">
-        {displayImages.slice(0, count).map((_, index) => (
-          <button
-            key={index}
-            onClick={() => setCurrentIndex(index)}
-            className={`w-3 h-3 rounded-full transition-all duration-300 ${
-              index === currentIndex
-                ? 'bg-white scale-125'
-                : 'bg-white/50 hover:bg-white/75'
-            }`}
-          />
-        ))}
-      </div>
+             {/* Navigation Dots */}
+       <div className="flex justify-center mt-16 space-x-2">
+         {images.map((_, index) => (
+           <button
+             key={index}
+             onClick={() => setCurrentIndex(index)}
+             className={`w-3 h-3 rounded-full transition-all duration-300 ${
+               index === currentIndex
+                 ? 'bg-white scale-125'
+                 : 'bg-white/50 hover:bg-white/75'
+             }`}
+           />
+         ))}
+       </div>
 
       <style jsx>{`
         .carousel-3d-container {
@@ -137,20 +202,20 @@ export default function Dynamic3DCarousel({
           justify-content: center;
         }
 
-        .carousel-3d {
-          position: relative;
-          width: 200px;
-          height: 200px;
-          transform-style: preserve-3d;
-          transition: transform 0.8s cubic-bezier(0.4, 0.0, 0.2, 1);
-        }
+                 .carousel-3d {
+           position: relative;
+           width: 300px;
+           height: 300px;
+           transform-style: preserve-3d;
+           transition: transform 0.8s cubic-bezier(0.4, 0.0, 0.2, 1);
+         }
 
-        .carousel-3d-item {
-          position: absolute;
-          width: 200px;
-          height: 200px;
-          backface-visibility: hidden;
-        }
+         .carousel-3d-item {
+           position: absolute;
+           width: 300px;
+           height: 300px;
+           backface-visibility: hidden;
+         }
 
         .carousel-3d-image {
           width: 100%;
@@ -195,21 +260,21 @@ export default function Dynamic3DCarousel({
           transform: translateY(0);
         }
 
-        @media (max-width: 768px) {
-          .carousel-3d {
-            width: 150px;
-            height: 150px;
-          }
+                 @media (max-width: 768px) {
+           .carousel-3d {
+             width: 225px;
+             height: 225px;
+           }
 
-          .carousel-3d-item {
-            width: 150px;
-            height: 150px;
-          }
+           .carousel-3d-item {
+             width: 225px;
+             height: 225px;
+           }
 
-          .carousel-3d-item {
-            transform: rotateY(var(--angle)) translateZ(150px) !important;
-          }
-        }
+           .carousel-3d-item {
+             transform: rotateY(var(--angle)) translateZ(225px) !important;
+           }
+         }
       `}</style>
     </div>
   );

@@ -108,6 +108,7 @@ export default function SimpleImageUpload({ category, subcategory, onUploadCompl
           customName: fileMetadata.customName || file.name.replace(/\.[^/.]+$/, ""),
           price: fileMetadata.price || null,
           description: fileMetadata.description || null,
+          sortOrder: Date.now(), // Use timestamp for initial sort order
           // Standard fields
           category,
           subcategory: subcategory || null,

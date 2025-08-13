@@ -23,6 +23,7 @@ interface ImageData {
   customName?: string;
   price?: string;
   description?: string;
+  sortOrder?: number;
   // Standard fields
   category: string;
   subcategory?: string;
@@ -81,8 +82,16 @@ export default function SimpleAdminPanel({ isOpen, onClose }: AdminPanelProps) {
         imageList = imageList.filter(img => img.subcategory === aboutSubcategory);
       }
 
-      // Sort by upload date (newest first)
+      // Sort by custom order first, then by upload date
       imageList.sort((a, b) => {
+        // If both have sortOrder, use that
+        if (a.sortOrder !== undefined && b.sortOrder !== undefined) {
+          return a.sortOrder - b.sortOrder;
+        }
+        // If only one has sortOrder, prioritize it
+        if (a.sortOrder !== undefined) return -1;
+        if (b.sortOrder !== undefined) return 1;
+        // If neither has sortOrder, sort by upload date (newest first)
         const dateA = a.uploadedAt?.toDate?.() || new Date(a.uploadedAt) || new Date(0);
         const dateB = b.uploadedAt?.toDate?.() || new Date(b.uploadedAt) || new Date(0);
         return dateB.getTime() - dateA.getTime();
@@ -248,6 +257,52 @@ export default function SimpleAdminPanel({ isOpen, onClose }: AdminPanelProps) {
       alert('Error deleting image. Check console for details.');
     } finally {
       setDeleteLoading(null);
+    }
+  };
+
+  const handleMoveImageUp = async (imageIndex: number) => {
+    if (imageIndex === 0) return; // Already at the top
+    
+    const currentImage = images[imageIndex];
+    const previousImage = images[imageIndex - 1];
+    
+    try {
+      // Assign sortOrder if not present
+      const currentOrder = currentImage.sortOrder ?? imageIndex;
+      const previousOrder = previousImage.sortOrder ?? (imageIndex - 1);
+      
+      // Swap the orders
+      await updateDoc(doc(db, 'images', currentImage.id), { sortOrder: previousOrder });
+      await updateDoc(doc(db, 'images', previousImage.id), { sortOrder: currentOrder });
+      
+      // Reload images to reflect new order
+      loadImages();
+    } catch (error) {
+      console.error('Error moving image up:', error);
+      alert('Error reordering image. Check console for details.');
+    }
+  };
+
+  const handleMoveImageDown = async (imageIndex: number) => {
+    if (imageIndex === images.length - 1) return; // Already at the bottom
+    
+    const currentImage = images[imageIndex];
+    const nextImage = images[imageIndex + 1];
+    
+    try {
+      // Assign sortOrder if not present
+      const currentOrder = currentImage.sortOrder ?? imageIndex;
+      const nextOrder = nextImage.sortOrder ?? (imageIndex + 1);
+      
+      // Swap the orders
+      await updateDoc(doc(db, 'images', currentImage.id), { sortOrder: nextOrder });
+      await updateDoc(doc(db, 'images', nextImage.id), { sortOrder: currentOrder });
+      
+      // Reload images to reflect new order
+      loadImages();
+    } catch (error) {
+      console.error('Error moving image down:', error);
+      alert('Error reordering image. Check console for details.');
     }
   };
 
@@ -602,7 +657,7 @@ export default function SimpleAdminPanel({ isOpen, onClose }: AdminPanelProps) {
                   </div>
                 ) : (
                   <div className="space-y-4 max-h-96 overflow-y-auto">
-                    {images.map((image) => (
+                    {images.map((image, index) => (
                       <div key={image.id} className="bg-gray-50 rounded-lg p-4 border border-gray-200 hover:border-blue-300 transition-colors">
                         <div className="flex items-start space-x-4">
                           {/* Image Thumbnail */}
@@ -724,34 +779,55 @@ export default function SimpleAdminPanel({ isOpen, onClose }: AdminPanelProps) {
                                 </div>
                                 
                                 {/* Actions */}
-                                <div className="flex-shrink-0 ml-4 space-y-1">
-                                  <button
-                                    onClick={() => handleEditImage(image)}
-                                    disabled={deleteLoading === image.id || editingImageId !== null}
-                                    className="w-full bg-blue-500 hover:bg-blue-600 disabled:bg-blue-300 text-white px-3 py-1 rounded-lg text-sm font-medium transition-colors flex items-center space-x-1"
-                                    title="Edit this image"
-                                  >
-                                    <span>✏️</span>
-                                    <span>Edit</span>
-                                  </button>
-                                  <button
-                                    onClick={() => handleDeleteImage(image)}
-                                    disabled={deleteLoading === image.id || editingImageId !== null}
-                                    className="w-full bg-red-500 hover:bg-red-600 disabled:bg-red-300 text-white px-3 py-1 rounded-lg text-sm font-medium transition-colors flex items-center space-x-1"
-                                    title="Delete this image"
-                                  >
-                                    {deleteLoading === image.id ? (
-                                      <>
-                                        <div className="animate-spin rounded-full h-3 w-3 border-b border-white"></div>
-                                        <span>Deleting...</span>
-                                      </>
-                                    ) : (
-                                      <>
-                                        <span>🗑️</span>
-                                        <span>Delete</span>
-                                      </>
-                                    )}
-                                  </button>
+                                <div className="flex-shrink-0 ml-4">
+                                  <div className="flex space-x-2 mb-2">
+                                    {/* Reorder Buttons */}
+                                    <button
+                                      onClick={() => handleMoveImageUp(index)}
+                                      disabled={index === 0 || deleteLoading === image.id || editingImageId !== null}
+                                      className="bg-gray-500 hover:bg-gray-600 disabled:bg-gray-300 text-white px-2 py-1 rounded text-xs font-medium transition-colors flex items-center"
+                                      title="Move up"
+                                    >
+                                      ↑
+                                    </button>
+                                    <button
+                                      onClick={() => handleMoveImageDown(index)}
+                                      disabled={index === images.length - 1 || deleteLoading === image.id || editingImageId !== null}
+                                      className="bg-gray-500 hover:bg-gray-600 disabled:bg-gray-300 text-white px-2 py-1 rounded text-xs font-medium transition-colors flex items-center"
+                                      title="Move down"
+                                    >
+                                      ↓
+                                    </button>
+                                  </div>
+                                  <div className="space-y-1">
+                                    <button
+                                      onClick={() => handleEditImage(image)}
+                                      disabled={deleteLoading === image.id || editingImageId !== null}
+                                      className="w-full bg-blue-500 hover:bg-blue-600 disabled:bg-blue-300 text-white px-3 py-1 rounded-lg text-sm font-medium transition-colors flex items-center space-x-1"
+                                      title="Edit this image"
+                                    >
+                                      <span>✏️</span>
+                                      <span>Edit</span>
+                                    </button>
+                                    <button
+                                      onClick={() => handleDeleteImage(image)}
+                                      disabled={deleteLoading === image.id || editingImageId !== null}
+                                      className="w-full bg-red-500 hover:bg-red-600 disabled:bg-red-300 text-white px-3 py-1 rounded-lg text-sm font-medium transition-colors flex items-center space-x-1"
+                                      title="Delete this image"
+                                    >
+                                      {deleteLoading === image.id ? (
+                                        <>
+                                          <div className="animate-spin rounded-full h-3 w-3 border-b border-white"></div>
+                                          <span>Deleting...</span>
+                                        </>
+                                      ) : (
+                                        <>
+                                          <span>🗑️</span>
+                                          <span>Delete</span>
+                                        </>
+                                      )}
+                                    </button>
+                                  </div>
                                 </div>
                               </div>
                             )}
@@ -771,6 +847,7 @@ export default function SimpleAdminPanel({ isOpen, onClose }: AdminPanelProps) {
                   <li>• <strong>Gallery:</strong> Perfect for portfolio images, exhibition photos, and artwork collections</li>
                   <li>• <strong>Store:</strong> Ideal for product images, merchandise, and items for sale</li>
                   <li>• <strong>Edit Images:</strong> Click the &quot;✏️ Edit&quot; button to update name, price, and description</li>
+                  <li>• <strong>Reorder Images:</strong> Use ↑ and ↓ arrows to change the display order of images</li>
                   <li>• <strong>Bulk Management:</strong> Only one image can be edited at a time for data safety</li>
                   <li>• Images are automatically organized by category and sorted by upload date</li>
                   <li>• Supported formats: JPG, PNG, GIF, WebP (max 10MB per file)</li>
