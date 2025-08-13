@@ -11,11 +11,18 @@ interface SimpleImageUploadProps {
   onUploadComplete: () => void;
 }
 
+interface FileMetadata {
+  file: File;
+  customName: string;
+  price: string;
+  description: string;
+}
+
 export default function SimpleImageUpload({ category, subcategory, onUploadComplete }: SimpleImageUploadProps) {
   const [uploading, setUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState<string[]>([]);
   const [dragActive, setDragActive] = useState(false);
-  const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
+  const [selectedFiles, setSelectedFiles] = useState<FileMetadata[]>([]);
 
   const handleFileSelect = useCallback((files: FileList | null) => {
     if (!files || files.length === 0) return;
@@ -27,7 +34,14 @@ export default function SimpleImageUpload({ category, subcategory, onUploadCompl
       alert('Some files were skipped - only image files are supported.');
     }
     
-    setSelectedFiles(imageFiles);
+    const fileMetadata = imageFiles.map(file => ({
+      file,
+      customName: file.name.replace(/\.[^/.]+$/, ""), // Remove file extension for default name
+      price: '',
+      description: ''
+    }));
+    
+    setSelectedFiles(fileMetadata);
   }, []);
 
   const handleDrag = useCallback((e: React.DragEvent) => {
@@ -50,6 +64,12 @@ export default function SimpleImageUpload({ category, subcategory, onUploadCompl
     }
   }, [handleFileSelect]);
 
+  const updateFileMetadata = (index: number, field: keyof Omit<FileMetadata, 'file'>, value: string) => {
+    setSelectedFiles(prev => prev.map((item, i) => 
+      i === index ? { ...item, [field]: value } : item
+    ));
+  };
+
   const handleUpload = async () => {
     if (selectedFiles.length === 0) return;
 
@@ -58,8 +78,9 @@ export default function SimpleImageUpload({ category, subcategory, onUploadCompl
 
     try {
       for (let i = 0; i < selectedFiles.length; i++) {
-        const file = selectedFiles[i];
-        setUploadProgress(prev => [...prev, `🚀 Starting upload: ${file.name}`]);
+        const fileMetadata = selectedFiles[i];
+        const file = fileMetadata.file;
+        setUploadProgress(prev => [...prev, `🚀 Starting upload: ${fileMetadata.customName || file.name}`]);
 
         // Create unique filename
         const timestamp = Date.now();
@@ -78,11 +99,16 @@ export default function SimpleImageUpload({ category, subcategory, onUploadCompl
         const downloadURL = await getDownloadURL(snapshot.ref);
         setUploadProgress(prev => [...prev, `🔗 Got URL: ${downloadURL.substring(0, 50)}...`]);
 
-        // Save metadata to Firestore
+        // Save metadata to Firestore with custom fields
         const imageData = {
           url: downloadURL,
           filename: fileName,
           originalName: file.name,
+          // Custom metadata fields
+          customName: fileMetadata.customName || file.name.replace(/\.[^/.]+$/, ""),
+          price: fileMetadata.price || null,
+          description: fileMetadata.description || null,
+          // Standard fields
           category,
           subcategory: subcategory || null,
           uploadedAt: new Date(),
@@ -174,29 +200,74 @@ export default function SimpleImageUpload({ category, subcategory, onUploadCompl
             </button>
           </div>
           
-          <div className="space-y-2 max-h-32 overflow-y-auto">
-            {selectedFiles.map((file, index) => (
-              <div key={index} className="flex items-center justify-between bg-white rounded-lg p-2 border">
-                <div className="flex items-center space-x-3">
-                  <div className="w-8 h-8 bg-gray-200 rounded flex items-center justify-center text-xs">
-                    📷
+          <div className="space-y-4 max-h-96 overflow-y-auto">
+            {selectedFiles.map((fileMetadata, index) => (
+              <div key={index} className="bg-white rounded-lg p-4 border">
+                {/* File Header */}
+                <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center space-x-3">
+                    <div className="w-8 h-8 bg-gray-200 rounded flex items-center justify-center text-xs">
+                      📷
+                    </div>
+                    <div className="min-w-0">
+                      <div className="text-sm font-medium text-gray-900 truncate">
+                        {fileMetadata.file.name}
+                      </div>
+                      <div className="text-xs text-gray-500">
+                        {(fileMetadata.file.size / 1024 / 1024).toFixed(2)} MB
+                      </div>
+                    </div>
                   </div>
-                  <div className="min-w-0">
-                    <div className="text-sm font-medium text-gray-900 truncate">
-                      {file.name}
-                    </div>
-                    <div className="text-xs text-gray-500">
-                      {(file.size / 1024 / 1024).toFixed(2)} MB
-                    </div>
+                  <button
+                    onClick={() => removeFile(index)}
+                    className="text-red-500 hover:text-red-700 p-1"
+                    title="Remove file"
+                  >
+                    ×
+                  </button>
+                </div>
+
+                {/* Metadata Fields */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                  <div>
+                    <label className="block text-xs font-medium text-gray-700 mb-1">
+                      Display Name
+                    </label>
+                    <input
+                      type="text"
+                      value={fileMetadata.customName}
+                      onChange={(e) => updateFileMetadata(index, 'customName', e.target.value)}
+                      className="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
+                      placeholder="Enter display name"
+                    />
+                  </div>
+                  
+                  <div>
+                    <label className="block text-xs font-medium text-gray-700 mb-1">
+                      Price {category === 'store' && <span className="text-red-500">*</span>}
+                    </label>
+                    <input
+                      type="text"
+                      value={fileMetadata.price}
+                      onChange={(e) => updateFileMetadata(index, 'price', e.target.value)}
+                      className="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
+                      placeholder={category === 'store' ? "$0.00" : "Optional price"}
+                    />
+                  </div>
+
+                  <div className="md:col-span-1">
+                    <label className="block text-xs font-medium text-gray-700 mb-1">
+                      Description
+                    </label>
+                    <input
+                      type="text"
+                      value={fileMetadata.description}
+                      onChange={(e) => updateFileMetadata(index, 'description', e.target.value)}
+                      className="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
+                      placeholder="Brief description"
+                    />
                   </div>
                 </div>
-                <button
-                  onClick={() => removeFile(index)}
-                  className="text-red-500 hover:text-red-700 p-1"
-                  title="Remove file"
-                >
-                  ×
-                </button>
               </div>
             ))}
           </div>

@@ -6,6 +6,11 @@ export interface ImageData {
   id: string;
   url: string;
   filename: string;
+  // Custom metadata fields
+  customName?: string;
+  price?: string;
+  description?: string;
+  // Standard fields
   category: 'featured' | 'gallery' | 'store';
   subcategory?: string; // For store: 'prints', 'original-works', 'apparel', 'other'
   uploadedAt: any; // Can be Firestore Timestamp or Date

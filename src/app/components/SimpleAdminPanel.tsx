@@ -2,11 +2,12 @@
 
 import { useState, useEffect, useContext, useCallback } from 'react';
 import { AuthContext } from '@/lib/contexts/AuthContext';
-import { collection, getDocs, deleteDoc, doc, query, where, orderBy } from 'firebase/firestore';
+import { collection, getDocs, deleteDoc, doc, query, where, orderBy, updateDoc } from 'firebase/firestore';
 import { ref, deleteObject } from 'firebase/storage';
 import { db, storage } from '@/lib/firebase/firebase';
 import SimpleImageUpload from './SimpleImageUpload';
 import GuestBookListModal from './GuestBookListModal';
+import OrphanedImageFinder from './OrphanedImageFinder';
 
 interface AdminPanelProps {
   isOpen: boolean;
@@ -18,6 +19,11 @@ interface ImageData {
   url: string;
   filename: string;
   originalName: string;
+  // Custom metadata fields
+  customName?: string;
+  price?: string;
+  description?: string;
+  // Standard fields
   category: string;
   subcategory?: string;
   uploadedAt: any;
@@ -45,6 +51,10 @@ export default function SimpleAdminPanel({ isOpen, onClose }: AdminPanelProps) {
   const [backgroundLoading, setBackgroundLoading] = useState(false);
   const [guestBookListOpen, setGuestBookListOpen] = useState(false);
   const [guestBookStats, setGuestBookStats] = useState({ totalVisitors: 0, recentVisitors: 0 });
+  const [orphanedImageFinderOpen, setOrphanedImageFinderOpen] = useState(false);
+  const [editingImageId, setEditingImageId] = useState<string | null>(null);
+  const [editFormData, setEditFormData] = useState({ customName: '', price: '', description: '' });
+  const [updateLoading, setUpdateLoading] = useState<string | null>(null);
 
   const loadImages = useCallback(async () => {
     setLoading(true);
@@ -179,8 +189,48 @@ export default function SimpleAdminPanel({ isOpen, onClose }: AdminPanelProps) {
     }
   }, [isOpen, onClose]);
 
+  const handleEditImage = (image: ImageData) => {
+    setEditingImageId(image.id);
+    setEditFormData({
+      customName: image.customName || image.originalName.replace(/\.[^/.]+$/, ""),
+      price: image.price || '',
+      description: image.description || ''
+    });
+  };
+
+  const handleCancelEdit = () => {
+    setEditingImageId(null);
+    setEditFormData({ customName: '', price: '', description: '' });
+  };
+
+  const handleUpdateImage = async (imageId: string) => {
+    setUpdateLoading(imageId);
+    try {
+      const updateData: Partial<ImageData> = {
+        customName: editFormData.customName.trim() || undefined,
+        price: editFormData.price.trim() || undefined,
+        description: editFormData.description.trim() || undefined
+      };
+
+      await updateDoc(doc(db, 'images', imageId), updateData);
+      
+      // Update local state
+      setImages(prev => prev.map(img => 
+        img.id === imageId ? { ...img, ...updateData } : img
+      ));
+
+      setEditingImageId(null);
+      setEditFormData({ customName: '', price: '', description: '' });
+    } catch (error) {
+      console.error('Error updating image:', error);
+      alert('Error updating image. Check console for details.');
+    } finally {
+      setUpdateLoading(null);
+    }
+  };
+
   const handleDeleteImage = async (image: ImageData) => {
-    if (!confirm(`Are you sure you want to delete "${image.originalName}"?\n\nThis action cannot be undone.`)) return;
+    if (!confirm(`Are you sure you want to delete "${image.customName || image.originalName}"?\n\nThis action cannot be undone.`)) return;
 
     setDeleteLoading(image.id);
     try {
@@ -287,6 +337,17 @@ export default function SimpleAdminPanel({ isOpen, onClose }: AdminPanelProps) {
               <strong> Showcase Pieces:</strong> Highlighted individual works • 
               <strong> Featured Collections:</strong> Curated series and themes • 
               <strong> Spotlight Works:</strong> Special attention pieces
+            </div>
+            <div className="mt-3">
+              <button
+                onClick={() => setOrphanedImageFinderOpen(true)}
+                className="px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white rounded-lg text-sm font-medium transition-colors"
+              >
+                🔍 Find Orphaned Images
+              </button>
+              <span className="text-xs text-gray-500 ml-2">
+                Find images that don't appear in subcategory filters
+              </span>
             </div>
           </div>
         )}
@@ -551,49 +612,149 @@ export default function SimpleAdminPanel({ isOpen, onClose }: AdminPanelProps) {
                               alt={image.originalName}
                               className="w-20 h-20 object-cover rounded-lg border border-gray-300"
                             />
-                            {deleteLoading === image.id && (
+                            {(deleteLoading === image.id || updateLoading === image.id) && (
                               <div className="absolute inset-0 bg-black/50 rounded-lg flex items-center justify-center">
                                 <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-white"></div>
                               </div>
                             )}
                           </div>
 
-                          {/* Image Info */}
+                          {/* Image Info / Edit Form */}
                           <div className="flex-1 min-w-0">
-                            <div className="flex items-start justify-between">
-                              <div className="min-w-0 flex-1">
-                                <h4 className="font-medium text-gray-900 truncate" title={image.originalName}>
-                                  {image.originalName}
-                                </h4>
-                                <div className="text-sm text-gray-500 mt-1 space-y-1">
-                                  <div>📁 {image.filename}</div>
-                                  <div>📅 {formatDate(image.uploadedAt)}</div>
-                                  <div>💾 {formatFileSize(image.size)} • {image.type}</div>
+                            {editingImageId === image.id ? (
+                              /* Edit Mode */
+                              <div className="space-y-3">
+                                <div className="text-xs text-gray-500 mb-2">
+                                  Editing: {image.originalName}
+                                </div>
+                                
+                                {/* Edit Form */}
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                  <div className="md:col-span-2">
+                                    <label className="block text-xs font-medium text-gray-700 mb-1">
+                                      Display Name
+                                    </label>
+                                    <input
+                                      type="text"
+                                      value={editFormData.customName}
+                                      onChange={(e) => setEditFormData(prev => ({ ...prev, customName: e.target.value }))}
+                                      className="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
+                                      placeholder="Enter display name"
+                                    />
+                                  </div>
+                                  
+                                  <div>
+                                    <label className="block text-xs font-medium text-gray-700 mb-1">
+                                      Price {activeTab === 'store' && <span className="text-red-500">*</span>}
+                                    </label>
+                                    <input
+                                      type="text"
+                                      value={editFormData.price}
+                                      onChange={(e) => setEditFormData(prev => ({ ...prev, price: e.target.value }))}
+                                      className="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
+                                      placeholder={activeTab === 'store' ? "$0.00" : "Optional price"}
+                                    />
+                                  </div>
+
+                                  <div>
+                                    <label className="block text-xs font-medium text-gray-700 mb-1">
+                                      Description
+                                    </label>
+                                    <input
+                                      type="text"
+                                      value={editFormData.description}
+                                      onChange={(e) => setEditFormData(prev => ({ ...prev, description: e.target.value }))}
+                                      className="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
+                                      placeholder="Brief description"
+                                    />
+                                  </div>
+                                </div>
+
+                                {/* Edit Actions */}
+                                <div className="flex space-x-2 pt-2">
+                                  <button
+                                    onClick={() => handleUpdateImage(image.id)}
+                                    disabled={updateLoading === image.id}
+                                    className="bg-green-500 hover:bg-green-600 disabled:bg-green-300 text-white px-3 py-1 rounded text-sm font-medium transition-colors flex items-center space-x-1"
+                                  >
+                                    {updateLoading === image.id ? (
+                                      <>
+                                        <div className="animate-spin rounded-full h-3 w-3 border-b border-white"></div>
+                                        <span>Saving...</span>
+                                      </>
+                                    ) : (
+                                      <>
+                                        <span>💾</span>
+                                        <span>Save</span>
+                                      </>
+                                    )}
+                                  </button>
+                                  <button
+                                    onClick={handleCancelEdit}
+                                    disabled={updateLoading === image.id}
+                                    className="bg-gray-500 hover:bg-gray-600 disabled:bg-gray-300 text-white px-3 py-1 rounded text-sm font-medium transition-colors"
+                                  >
+                                    Cancel
+                                  </button>
                                 </div>
                               </div>
-                              
-                              {/* Actions */}
-                              <div className="flex-shrink-0 ml-4">
-                                <button
-                                  onClick={() => handleDeleteImage(image)}
-                                  disabled={deleteLoading === image.id}
-                                  className="bg-red-500 hover:bg-red-600 disabled:bg-red-300 text-white px-3 py-1 rounded-lg text-sm font-medium transition-colors flex items-center space-x-1"
-                                  title="Delete this image"
-                                >
-                                  {deleteLoading === image.id ? (
-                                    <>
-                                      <div className="animate-spin rounded-full h-3 w-3 border-b border-white"></div>
-                                      <span>Deleting...</span>
-                                    </>
-                                  ) : (
-                                    <>
-                                      <span>🗑️</span>
-                                      <span>Delete</span>
-                                    </>
+                            ) : (
+                              /* View Mode */
+                              <div className="flex items-start justify-between">
+                                <div className="min-w-0 flex-1">
+                                  <h4 className="font-medium text-gray-900 truncate" title={image.customName || image.originalName}>
+                                    {image.customName || image.originalName}
+                                  </h4>
+                                  {image.customName && (
+                                    <div className="text-xs text-gray-400 truncate">
+                                      Original: {image.originalName}
+                                    </div>
                                   )}
-                                </button>
+                                  <div className="text-sm text-gray-500 mt-1 space-y-1">
+                                    {image.price && (
+                                      <div>💰 {image.price}</div>
+                                    )}
+                                    {image.description && (
+                                      <div className="truncate" title={image.description}>📝 {image.description}</div>
+                                    )}
+                                    <div>📁 {image.filename}</div>
+                                    <div>📅 {formatDate(image.uploadedAt)}</div>
+                                    <div>💾 {formatFileSize(image.size)} • {image.type}</div>
+                                  </div>
+                                </div>
+                                
+                                {/* Actions */}
+                                <div className="flex-shrink-0 ml-4 space-y-1">
+                                  <button
+                                    onClick={() => handleEditImage(image)}
+                                    disabled={deleteLoading === image.id || editingImageId !== null}
+                                    className="w-full bg-blue-500 hover:bg-blue-600 disabled:bg-blue-300 text-white px-3 py-1 rounded-lg text-sm font-medium transition-colors flex items-center space-x-1"
+                                    title="Edit this image"
+                                  >
+                                    <span>✏️</span>
+                                    <span>Edit</span>
+                                  </button>
+                                  <button
+                                    onClick={() => handleDeleteImage(image)}
+                                    disabled={deleteLoading === image.id || editingImageId !== null}
+                                    className="w-full bg-red-500 hover:bg-red-600 disabled:bg-red-300 text-white px-3 py-1 rounded-lg text-sm font-medium transition-colors flex items-center space-x-1"
+                                    title="Delete this image"
+                                  >
+                                    {deleteLoading === image.id ? (
+                                      <>
+                                        <div className="animate-spin rounded-full h-3 w-3 border-b border-white"></div>
+                                        <span>Deleting...</span>
+                                      </>
+                                    ) : (
+                                      <>
+                                        <span>🗑️</span>
+                                        <span>Delete</span>
+                                      </>
+                                    )}
+                                  </button>
+                                </div>
                               </div>
-                            </div>
+                            )}
                           </div>
                         </div>
                       </div>
@@ -609,6 +770,8 @@ export default function SimpleAdminPanel({ isOpen, onClose }: AdminPanelProps) {
                   <li>• <strong>Featured Work:</strong> Use for hero images, main showcases, and featured pieces</li>
                   <li>• <strong>Gallery:</strong> Perfect for portfolio images, exhibition photos, and artwork collections</li>
                   <li>• <strong>Store:</strong> Ideal for product images, merchandise, and items for sale</li>
+                  <li>• <strong>Edit Images:</strong> Click the "✏️ Edit" button to update name, price, and description</li>
+                  <li>• <strong>Bulk Management:</strong> Only one image can be edited at a time for data safety</li>
                   <li>• Images are automatically organized by category and sorted by upload date</li>
                   <li>• Supported formats: JPG, PNG, GIF, WebP (max 10MB per file)</li>
                 </ul>
@@ -619,6 +782,11 @@ export default function SimpleAdminPanel({ isOpen, onClose }: AdminPanelProps) {
         {/* Guest Book List Modal */}
         {guestBookListOpen && (
           <GuestBookListModal onClose={() => setGuestBookListOpen(false)} />
+        )}
+        
+        {/* Orphaned Image Finder Modal */}
+        {orphanedImageFinderOpen && (
+          <OrphanedImageFinder onClose={() => setOrphanedImageFinderOpen(false)} />
         )}
       </div>
     </div>

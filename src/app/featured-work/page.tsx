@@ -11,6 +11,11 @@ interface FeaturedImage {
   url: string;
   filename: string;
   originalName: string;
+  // Custom metadata fields
+  customName?: string;
+  price?: string;
+  description?: string;
+  // Standard fields
   category: string;
   subcategory?: string;
   uploadedAt: any;
@@ -180,19 +185,23 @@ export default function FeaturedWork() {
                     
                     {/* Artwork Details */}
                     <div className="p-6">
-                      <h3 className="text-xl font-semibold text-black mb-2 truncate" title={image.originalName}>
-                        {image.originalName}
+                      <h3 className="text-xl font-semibold text-black mb-3 truncate" title={image.customName || image.originalName}>
+                        {image.customName || image.originalName}
                       </h3>
-                      <div className="space-y-2 text-sm text-black/80">
-                        <p><span className="font-medium">Category:</span> {image.subcategory ? image.subcategory.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ') : 'Featured'}</p>
-                        <p><span className="font-medium">Uploaded:</span> {formatDate(image.uploadedAt)}</p>
-                        <p><span className="font-medium">Size:</span> {formatFileSize(image.size)}</p>
-                      </div>
                       
-                      {/* View Details Button */}
-                      <button className="w-full mt-4 py-2 bg-white/20 hover:bg-white/30 text-black rounded-lg transition-all duration-300 border border-white/30">
-                        View Details
-                      </button>
+                      {/* Price */}
+                      {image.price && (
+                        <div className="text-lg font-bold text-green-700 mb-3">
+                          {image.price.startsWith('$') ? image.price : `$${image.price}`}
+                        </div>
+                      )}
+                      
+                      {/* Description */}
+                      {image.description && (
+                        <p className="text-black/80 text-sm leading-relaxed">
+                          {image.description}
+                        </p>
+                      )}
                     </div>
                   </div>
                 </div>
