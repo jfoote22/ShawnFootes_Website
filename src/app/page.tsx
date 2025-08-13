@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import AdminLogin from "./components/AdminLogin";
 import DynamicImage from "./components/DynamicImage";
 import DynamicImageCarousel from "./components/DynamicImageCarousel";
+import Dynamic3DCarousel from "./components/Dynamic3DCarousel";
 import GuestBookModal from "./components/GuestBookModal";
 
 export default function Home() {
@@ -158,17 +159,14 @@ export default function Home() {
                   </Link>
                 </div>
               
-              {/* Carousel Container */}
-              <div className="relative overflow-hidden rounded-2xl bg-white/10 backdrop-blur-sm p-6 border border-white/20 mt-32">
-                <div className="animate-scroll">
-                  <DynamicImageCarousel
-                    category="gallery"
-                    count={6}
-                    intervalMs={8000}
-                    className="flex gap-6"
-                    itemClassName="flex-shrink-0 w-64 h-64"
-                  />
-                </div>
+              {/* 3D Carousel Container */}
+              <div className="relative rounded-2xl bg-white/10 backdrop-blur-sm p-6 border border-white/20 mt-32">
+                <Dynamic3DCarousel
+                  category="gallery"
+                  count={6}
+                  intervalMs={5000}
+                  className="w-full"
+                />
               </div>
 
                               {/* Gallery Navigation */}
