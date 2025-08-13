@@ -346,7 +346,7 @@ export default function SimpleAdminPanel({ isOpen, onClose }: AdminPanelProps) {
                 🔍 Find Orphaned Images
               </button>
               <span className="text-xs text-gray-500 ml-2">
-                Find images that don't appear in subcategory filters
+                Find images that don&apos;t appear in subcategory filters
               </span>
             </div>
           </div>
@@ -770,7 +770,7 @@ export default function SimpleAdminPanel({ isOpen, onClose }: AdminPanelProps) {
                   <li>• <strong>Featured Work:</strong> Use for hero images, main showcases, and featured pieces</li>
                   <li>• <strong>Gallery:</strong> Perfect for portfolio images, exhibition photos, and artwork collections</li>
                   <li>• <strong>Store:</strong> Ideal for product images, merchandise, and items for sale</li>
-                  <li>• <strong>Edit Images:</strong> Click the "✏️ Edit" button to update name, price, and description</li>
+                  <li>• <strong>Edit Images:</strong> Click the &quot;✏️ Edit&quot; button to update name, price, and description</li>
                   <li>• <strong>Bulk Management:</strong> Only one image can be edited at a time for data safety</li>
                   <li>• Images are automatically organized by category and sorted by upload date</li>
                   <li>• Supported formats: JPG, PNG, GIF, WebP (max 10MB per file)</li>

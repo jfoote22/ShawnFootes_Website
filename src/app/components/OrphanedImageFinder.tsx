@@ -124,7 +124,7 @@ export default function OrphanedImageFinder({ onClose }: OrphanedImageFinderProp
         <div className="flex items-center justify-between p-6 border-b bg-gradient-to-r from-red-50 to-orange-50">
           <div>
             <h2 className="text-2xl font-bold text-gray-800">Orphaned Featured Images</h2>
-            <p className="text-gray-600 mt-1">Images without subcategories that won't appear in admin panel</p>
+            <p className="text-gray-600 mt-1">Images without subcategories that won&apos;t appear in admin panel</p>
           </div>
           <button
             onClick={onClose}
@@ -151,10 +151,10 @@ export default function OrphanedImageFinder({ onClose }: OrphanedImageFinderProp
             <div className="space-y-4">
               <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-6">
                 <h3 className="font-semibold text-yellow-800 mb-2">Found {orphanedImages.length} orphaned image(s)</h3>
-                <p className="text-yellow-700 text-sm">
-                  These images are in the featured category but don't have a subcategory, 
-                  making them invisible in the admin panel's subcategory filters.
-                </p>
+                                  <p className="text-yellow-700 text-sm">
+                    These images are in the featured category but don&apos;t have a subcategory, 
+                    making them invisible in the admin panel&apos;s subcategory filters.
+                  </p>
               </div>
 
               {orphanedImages.map((image) => (
