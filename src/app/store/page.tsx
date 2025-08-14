@@ -160,12 +160,15 @@ export default function Store() {
 
               return (
                 <div key={category.key} className="mb-20">
-                  {/* Category Header */}
+                  {/* Category Header - Clickable */}
                   <div className="mb-8">
-                    <div className="flex items-center justify-center mb-4">
-                      <span className="text-4xl mr-4">{category.icon}</span>
-                      <h3 className="text-3xl font-bold text-black">{category.title}</h3>
-                    </div>
+                    <Link href={`/store/${category.key}`} className="group cursor-pointer">
+                      <div className="flex items-center justify-center mb-4 group-hover:scale-105 transition-transform duration-300">
+                        <span className="text-4xl mr-4">{category.icon}</span>
+                        <h3 className="text-3xl font-bold text-black group-hover:text-black/80 transition-colors">{category.title}</h3>
+                        <span className="ml-3 text-black/50 group-hover:text-black/70 transition-colors">→</span>
+                      </div>
+                    </Link>
                     <p className="text-center text-lg text-black/70 mb-2">{category.description}</p>
                     <p className="text-center text-sm text-black/60">
                       {categoryImages.length} item{categoryImages.length !== 1 ? 's' : ''} available

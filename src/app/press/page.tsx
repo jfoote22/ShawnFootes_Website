@@ -118,6 +118,43 @@ export default function Press() {
 
       {/* Press Content */}
       <div className="container mx-auto px-8 py-12">
+        {/* Featured Video Section */}
+        <div className="mb-16">
+          <div className="text-center mb-8">
+            <h2 className="text-3xl font-bold text-black mb-4">Featured Video</h2>
+            <p className="text-lg text-black/80">Latest video coverage and interviews</p>
+          </div>
+          
+          <div className="max-w-4xl mx-auto">
+            <div className="bg-white/10 backdrop-blur-sm rounded-2xl overflow-hidden border border-white/20 p-6">
+              <div className="aspect-video w-full rounded-xl overflow-hidden">
+                <iframe
+                  width="100%"
+                  height="100%"
+                  src="https://www.youtube.com/embed/Vw8NRASh20E?start=9"
+                  title="Featured Press Video"
+                  frameBorder="0"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                  allowFullScreen
+                  className="w-full h-full"
+                ></iframe>
+              </div>
+              <div className="mt-6 text-center">
+                <h3 className="text-xl font-semibold text-black mb-2">Video Interview</h3>
+                <p className="text-black/80">Featured coverage and behind-the-scenes content</p>
+                <div className="mt-4">
+                  <span className="inline-block bg-red-100/80 text-red-800 px-3 py-1 rounded-full text-xs font-medium mr-2">
+                    📺 Video
+                  </span>
+                  <span className="inline-block bg-purple-100/80 text-purple-800 px-3 py-1 rounded-full text-xs font-medium">
+                    Featured Press
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
         {images.length === 0 ? (
           <div className="text-center py-20">
             <div className="text-6xl mb-6">📰</div>

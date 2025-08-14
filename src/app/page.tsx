@@ -88,9 +88,9 @@ export default function Home() {
                 <Link href="/store" className="text-black/80 hover:text-black transition-colors font-medium">
                   Store
                 </Link>
-                <a href="#collaborations" className="text-black/80 hover:text-black transition-colors font-medium">
+                <Link href="/collaborations" className="text-black/80 hover:text-black transition-colors font-medium">
                   Collaborations
-                </a>
+                </Link>
                 <a href="#about" className="text-black/80 hover:text-black transition-colors font-medium">
                   About
                 </a>
@@ -218,7 +218,7 @@ export default function Home() {
           
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-8">
             {/* Original Works Category */}
-            <Link href="/store#paintings" className="group cursor-pointer">
+            <Link href="/store/original-works" className="group cursor-pointer">
               <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/20 hover:bg-white/20 transition-all duration-300">
                 <DynamicImage
                   category="store"
@@ -238,7 +238,7 @@ export default function Home() {
             </Link>
 
             {/* Prints Category */}
-            <Link href="/store#prints" className="group cursor-pointer">
+            <Link href="/store/prints" className="group cursor-pointer">
               <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/20 hover:bg-white/20 transition-all duration-300">
                 <DynamicImage
                   category="store"
@@ -258,7 +258,7 @@ export default function Home() {
             </Link>
 
             {/* Apparel Category */}
-            <Link href="/store#apparel" className="group cursor-pointer">
+            <Link href="/store/apparel" className="group cursor-pointer">
               <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/20 hover:bg-white/20 transition-all duration-300">
                 <DynamicImage
                   category="store"
@@ -278,7 +278,7 @@ export default function Home() {
             </Link>
 
             {/* Commissions Category */}
-            <Link href="/store#commissions" className="group cursor-pointer">
+            <Link href="/store/commissions" className="group cursor-pointer">
               <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/20 hover:bg-white/20 transition-all duration-300">
                 <DynamicImage
                   category="store"
@@ -298,7 +298,7 @@ export default function Home() {
             </Link>
 
             {/* NFTs Category */}
-            <Link href="/store#nfts" className="group cursor-pointer">
+            <Link href="/store/nfts" className="group cursor-pointer">
               <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/20 hover:bg-white/20 transition-all duration-300">
                 <DynamicImage
                   category="store"
@@ -375,8 +375,8 @@ export default function Home() {
             </div>
           </div>
 
-          {/* Bio Section */}
-          <div className="container mx-auto px-8 mt-20 pb-20" id="bio">
+          {/* About Section */}
+          <div className="container mx-auto px-8 mt-20 pb-20" id="about">
             <div className="text-center mb-16">
               <h2 className="text-4xl font-bold text-black mb-4">About the Artist</h2>
             </div>
