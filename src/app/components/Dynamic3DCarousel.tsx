@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
+import { createPortal } from 'react-dom';
 import { collection, getDocs, query, where } from 'firebase/firestore';
 import { db } from '@/lib/firebase/firebase';
 
@@ -38,6 +39,9 @@ export default function Dynamic3DCarousel({
   const [images, setImages] = useState<ImageData[]>([]);
   const [loading, setLoading] = useState(true);
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [modalImageIndex, setModalImageIndex] = useState(0);
+  const [isMounted, setIsMounted] = useState(false);
 
   const loadImages = useCallback(async () => {
     try {
@@ -98,6 +102,11 @@ export default function Dynamic3DCarousel({
     loadImages();
   }, [loadImages]);
 
+  // Mark mounted for portal usage
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
   // Auto-rotate the carousel index only - images stay stable
   useEffect(() => {
     if (images.length === 0) return;
@@ -108,6 +117,35 @@ export default function Dynamic3DCarousel({
 
     return () => clearInterval(interval);
   }, [images.length, intervalMs]);
+
+  // Modal handlers
+  const openModal = (imageIndex: number) => {
+    setModalImageIndex(imageIndex);
+    setModalOpen(true);
+  };
+
+  const closeModal = () => {
+    setModalOpen(false);
+  };
+
+  // Handle keyboard navigation for modal
+  useEffect(() => {
+    if (!modalOpen) return;
+    
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        closeModal();
+      }
+    };
+    
+    document.addEventListener('keydown', handleKeyDown);
+    document.body.style.overflow = 'hidden'; // Prevent scrolling
+    
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+      document.body.style.overflow = 'unset';
+    };
+  }, [modalOpen]);
 
   if (loading) {
     return (
@@ -153,18 +191,21 @@ export default function Dynamic3DCarousel({
                    transform: `rotateY(${angle}deg) translateZ(300px)`,
                  }}
               >
-                <div className={`carousel-3d-image ${isActive ? 'active' : ''}`}>
-                  <img
-                    src={image.url}
-                    alt={image.customName || image.originalName}
-                    className="w-full h-full object-cover"
-                  />
-                  <div className="carousel-3d-overlay">
-                    <h3 className="text-black font-semibold text-lg">
-                      {image.customName || image.originalName}
-                    </h3>
-                  </div>
+                              <div 
+                className={`carousel-3d-image ${isActive ? 'active' : ''} ${isActive ? 'cursor-pointer' : ''}`}
+                onClick={isActive ? () => openModal(index) : undefined}
+              >
+                <img
+                  src={image.url}
+                  alt={image.customName || image.originalName}
+                  className="w-full h-full object-cover"
+                />
+                <div className="carousel-3d-overlay">
+                  <h3 className="text-black font-semibold text-lg">
+                    {image.customName || image.originalName}
+                  </h3>
                 </div>
+              </div>
               </div>
             );
           })}
@@ -186,7 +227,65 @@ export default function Dynamic3DCarousel({
          ))}
        </div>
 
+      {/* Fullscreen Modal via Portal (anchored to viewport center) */}
+      {isMounted && modalOpen && createPortal(
+        (
+          <div 
+            className="fixed inset-0 z-[1000] flex items-center justify-center"
+            onClick={closeModal}
+          >
+            <div className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 max-w-[90vw] max-h-[90vh] flex items-center justify-center">
+              {/* Modal Image */}
+              <img
+                src={images[modalImageIndex]?.url}
+                alt={images[modalImageIndex]?.customName || images[modalImageIndex]?.originalName}
+                className="max-w-full max-h-full object-contain rounded-xl shadow-2xl transform transition-all duration-500 ease-out animate-modalZoomIn"
+                onClick={(e) => e.stopPropagation()}
+              />
+              
+              {/* Close button */}
+              <button 
+                onClick={closeModal}
+                className="absolute top-4 right-4 text-white text-4xl z-[1001] hover:scale-110 transition-transform bg-black/30 rounded-full w-12 h-12 flex items-center justify-center"
+              >
+                &times;
+              </button>
+
+              {/* Image details overlay */}
+              <div className="absolute bottom-0 left-0 right-0 bg-black/60 backdrop-blur-md p-6 text-white rounded-b-xl opacity-0 hover:opacity-100 transition-opacity duration-300">
+                <h3 className="text-2xl font-bold mb-2">
+                  {images[modalImageIndex]?.customName || images[modalImageIndex]?.originalName}
+                </h3>
+                {images[modalImageIndex]?.price && (
+                  <p className="text-xl text-green-400 font-semibold mb-2">
+                    {images[modalImageIndex]?.price.startsWith('$') ? images[modalImageIndex]?.price : `$${images[modalImageIndex]?.price}`}
+                  </p>
+                )}
+                {images[modalImageIndex]?.description && (
+                  <p className="text-sm opacity-80">{images[modalImageIndex]?.description}</p>
+                )}
+              </div>
+            </div>
+          </div>
+        ),
+        document.body
+      )}
+
       <style jsx>{`
+        @keyframes modalZoomIn {
+          0% {
+            opacity: 0;
+            transform: scale(0.3) translateY(100px);
+          }
+          100% {
+            opacity: 1;
+            transform: scale(1) translateY(0);
+          }
+        }
+        
+        .animate-modalZoomIn {
+          animation: modalZoomIn 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
         .carousel-3d-container {
           position: relative;
           width: 100%;
@@ -228,12 +327,13 @@ export default function Dynamic3DCarousel({
         .carousel-3d-image::before {
           content: '';
           position: absolute;
-          top: 0;
-          left: -100%;
-          width: 100%;
-          height: 100%;
-          background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
-          animation: shimmer 3s ease-in-out infinite;
+          top: -20%;
+          left: 0;
+          width: 40%;
+          height: 140%;
+          background: linear-gradient(105deg, transparent, rgba(255, 255, 255, 0.8), transparent);
+          animation: shimmerWithPause 8s ease-in-out infinite;
+          transform: skewX(-15deg);
           z-index: 1;
         }
 
@@ -246,7 +346,7 @@ export default function Dynamic3DCarousel({
         }
 
         .carousel-3d-image:hover::before {
-          animation-duration: 2s;
+          animation: shimmerWithPause 6s ease-in-out infinite;
         }
 
         .carousel-3d-image.active {
@@ -258,7 +358,25 @@ export default function Dynamic3DCarousel({
         }
 
         .carousel-3d-image.active::before {
-          animation-duration: 1.5s;
+          animation: shimmerWithPause 5s ease-in-out infinite;
+        }
+
+        @keyframes shimmerWithPause {
+          0% {
+            transform: translateX(-200%) skewX(-15deg);
+            opacity: 1;
+          }
+          25% {
+            transform: translateX(350%) skewX(-15deg);
+            opacity: 1;
+          }
+          30% {
+            opacity: 0;
+          }
+          100% {
+            transform: translateX(350%) skewX(-15deg);
+            opacity: 0;
+          }
         }
 
         .carousel-3d-image img {

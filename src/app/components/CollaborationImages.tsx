@@ -66,7 +66,7 @@ export default function CollaborationImages({
     loadImages();
   }, []);
 
-  // Rotate images every 6 seconds with enhanced transition effect
+  // Rotate images every 8 seconds with enhanced transition effect
   useEffect(() => {
     if (images.length <= 1) return;
 
@@ -76,7 +76,7 @@ export default function CollaborationImages({
         setCurrentIndex((prev) => (prev + 1) % images.length);
         setTimeout(() => setIsTransitioning(false), 500); // Longer transition time
       }, 600); // Longer fade out time
-    }, 6000);
+    }, 8000);
 
     return () => clearInterval(interval);
   }, [images.length]);

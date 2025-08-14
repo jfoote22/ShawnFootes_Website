@@ -134,7 +134,7 @@ export default function Home() {
                         <DynamicImage
                           category="featured"
                           className="w-full h-full rounded-lg"
-                          intervalMs={6000}
+                          intervalMs={12000}
                           alt="Featured Artwork"
                           fallbackContent={
                             <div className="w-full h-full bg-gradient-to-br from-purple-400 to-pink-400 rounded-lg flex items-center justify-center">
@@ -216,7 +216,7 @@ export default function Home() {
               </div>
             </div>
           
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-8">
             {/* Original Works Category */}
             <Link href="/store#paintings" className="group cursor-pointer">
               <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/20 hover:bg-white/20 transition-all duration-300">
@@ -294,6 +294,26 @@ export default function Home() {
                 />
                 <h3 className="text-xl font-semibold text-black mb-2">Commissions</h3>
                 <p className="text-black/80 text-sm">Custom artwork created just for you</p>
+              </div>
+            </Link>
+
+            {/* NFTs Category */}
+            <Link href="/store#nfts" className="group cursor-pointer">
+              <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/20 hover:bg-white/20 transition-all duration-300">
+                <DynamicImage
+                  category="store"
+                  subcategory="nfts"
+                  className="w-full h-48 rounded-xl mb-4"
+                  intervalMs={9000}
+                  alt="NFTs"
+                  fallbackContent={
+                    <div className="w-full h-48 bg-gradient-to-br from-cyan-400 to-blue-500 rounded-xl mb-4 flex items-center justify-center">
+                      <p className="text-white font-semibold">NFTs</p>
+                    </div>
+                  }
+                />
+                <h3 className="text-xl font-semibold text-black mb-2">NFTs</h3>
+                <p className="text-black/80 text-sm">Digital collectibles and blockchain art</p>
               </div>
             </Link>
           </div>

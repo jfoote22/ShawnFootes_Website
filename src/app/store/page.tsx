@@ -83,6 +83,20 @@ export default function Store() {
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
   };
 
+  // Group images by subcategory
+  const getImagesBySubcategory = (subcategory: string) => {
+    return images.filter(img => img.subcategory === subcategory);
+  };
+
+  // Define store categories in order
+  const storeCategories = [
+    { key: 'original-works', title: 'Original Works', description: 'One-of-a-kind original pieces', icon: '🎨' },
+    { key: 'prints', title: 'Prints', description: 'High-quality reproductions', icon: '🖼️' },
+    { key: 'apparel', title: 'Art and Clothing', description: 'Wearable art on clothing', icon: '👕' },
+    { key: 'commissions', title: 'Commissions', description: 'Custom artwork created just for you', icon: '✏️' },
+    { key: 'nfts', title: 'NFTs', description: 'Digital collectibles and blockchain art', icon: '💎' }
+  ];
+
   if (loading) {
     return (
       <div className="min-h-screen bg-black/20 backdrop-blur-sm flex items-center justify-center">
@@ -128,53 +142,77 @@ export default function Store() {
         ) : (
           <>
             {/* Store Header */}
-            <div className="text-center mb-12">
+            <div className="text-center mb-16">
               <h2 className="text-4xl font-bold text-black mb-4">
                 Art Store
               </h2>
               <p className="text-xl text-black/80">
-                {images.length} product{images.length !== 1 ? 's' : ''} available
+                {images.length} product{images.length !== 1 ? 's' : ''} available across all categories
               </p>
             </div>
 
-            {/* All Products Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
-              {images.map((image) => (
-                <div key={image.id} className="group cursor-pointer">
-                  <div className="glass-effect rounded-2xl overflow-hidden hover:scale-105 transition-all duration-500 image-card animate-fadeInUp">
-                    {/* Product Image */}
-                    <div className="w-full h-48 overflow-hidden">
-                      <img
-                        src={image.url}
-                        alt={image.originalName}
-                        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
-                      />
+            {/* Store Categories */}
+            {storeCategories.map((category) => {
+              const categoryImages = getImagesBySubcategory(category.key);
+              
+              // Only show category if it has images
+              if (categoryImages.length === 0) return null;
+
+              return (
+                <div key={category.key} className="mb-20">
+                  {/* Category Header */}
+                  <div className="mb-8">
+                    <div className="flex items-center justify-center mb-4">
+                      <span className="text-4xl mr-4">{category.icon}</span>
+                      <h3 className="text-3xl font-bold text-black">{category.title}</h3>
                     </div>
-                    
-                    {/* Product Details */}
-                    <div className="p-6">
-                      <h3 className="text-xl font-semibold text-black mb-3 truncate" title={image.customName || image.originalName}>
-                        {image.customName || image.originalName}
-                      </h3>
-                      
-                      {/* Price Display */}
-                      {image.price && (
-                        <div className="text-2xl font-bold text-green-700 mb-3">
-                          {image.price.startsWith('$') ? image.price : `$${image.price}`}
+                    <p className="text-center text-lg text-black/70 mb-2">{category.description}</p>
+                    <p className="text-center text-sm text-black/60">
+                      {categoryImages.length} item{categoryImages.length !== 1 ? 's' : ''} available
+                    </p>
+                  </div>
+
+                  {/* Category Products Grid */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+                    {categoryImages.map((image) => (
+                      <div key={image.id} className="group cursor-pointer">
+                        <div className="glass-effect rounded-2xl overflow-hidden hover:scale-105 transition-all duration-500 image-card animate-fadeInUp">
+                          {/* Product Image */}
+                          <div className="w-full h-48 overflow-hidden">
+                            <img
+                              src={image.url}
+                              alt={image.originalName}
+                              className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
+                            />
+                          </div>
+                          
+                          {/* Product Details */}
+                          <div className="p-6">
+                            <h4 className="text-xl font-semibold text-black mb-3 truncate" title={image.customName || image.originalName}>
+                              {image.customName || image.originalName}
+                            </h4>
+                            
+                            {/* Price Display */}
+                            {image.price && (
+                              <div className="text-2xl font-bold text-green-700 mb-3">
+                                {image.price.startsWith('$') ? image.price : `$${image.price}`}
+                              </div>
+                            )}
+                            
+                            {/* Description */}
+                            {image.description && (
+                              <p className="text-black/80 text-sm leading-relaxed">
+                                {image.description}
+                              </p>
+                            )}
+                          </div>
                         </div>
-                      )}
-                      
-                      {/* Description */}
-                      {image.description && (
-                        <p className="text-black/80 text-sm leading-relaxed">
-                          {image.description}
-                        </p>
-                      )}
-                    </div>
+                      </div>
+                    ))}
                   </div>
                 </div>
-              ))}
-            </div>
+              );
+            })}
 
             {/* Store Info */}
             <div className="text-center mt-20 bg-white/10 backdrop-blur-sm rounded-2xl p-12 border border-white/20">

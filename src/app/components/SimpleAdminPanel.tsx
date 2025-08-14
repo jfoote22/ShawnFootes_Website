@@ -33,7 +33,7 @@ interface ImageData {
 }
 
 type TabType = 'featured' | 'gallery' | 'store' | 'collaborations' | 'about' | 'website-settings';
-type StoreSubcategory = 'original-works' | 'prints' | 'apparel' | 'commissions';
+type StoreSubcategory = 'original-works' | 'prints' | 'apparel' | 'commissions' | 'nfts';
 type FeaturedSubcategory = 'hero-images' | 'showcase-pieces' | 'featured-collections' | 'spotlight-works';
 type CollaborationsSubcategory = 'partnerships' | 'joint-projects' | 'gallery-collaborations' | 'artist-networks';
 type AboutSubcategory = 'studio-shots' | 'artist-portraits' | 'work-in-progress' | 'behind-scenes' | 'press-coverage';
@@ -588,7 +588,7 @@ export default function SimpleAdminPanel({ isOpen, onClose }: AdminPanelProps) {
           <div className="p-4 border-b bg-gray-50">
             <label className="block text-sm font-medium mb-2">Store Category:</label>
             <div className="flex gap-2 mb-3">
-              {(['original-works', 'prints', 'apparel', 'commissions'] as StoreSubcategory[]).map((sub) => (
+              {(['original-works', 'prints', 'apparel', 'commissions', 'nfts'] as StoreSubcategory[]).map((sub) => (
                 <button
                   key={sub}
                   onClick={() => setStoreSubcategory(sub)}
@@ -606,7 +606,8 @@ export default function SimpleAdminPanel({ isOpen, onClose }: AdminPanelProps) {
               <strong>Original Works:</strong> One-of-a-kind original pieces • 
               <strong> Prints:</strong> High-quality reproductions • 
               <strong> Apparel:</strong> Wearable art on clothing • 
-              <strong> Commissions:</strong> Custom artwork created just for you
+              <strong> Commissions:</strong> Custom artwork created just for you • 
+              <strong> NFTs:</strong> Digital collectibles and blockchain art
             </div>
           </div>
         )}
