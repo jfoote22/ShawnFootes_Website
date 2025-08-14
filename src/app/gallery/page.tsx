@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useState, useEffect } from "react";
 import { collection, getDocs, query, where } from "firebase/firestore";
 import { db } from "@/lib/firebase/firebase";
+import ImageModal from "../components/ImageModal";
 
 interface GalleryImage {
   id: string;
@@ -14,8 +15,10 @@ interface GalleryImage {
   customName?: string;
   price?: string;
   description?: string;
+  sortOrder?: number;
   // Standard fields
   category: string;
+  subcategory?: string;
   uploadedAt: any;
   size: number;
   type: string;
@@ -25,6 +28,8 @@ export default function Gallery() {
   const [images, setImages] = useState<GalleryImage[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeFilter, setActiveFilter] = useState('all');
+  const [modalOpen, setModalOpen] = useState(false);
+  const [selectedImageIndex, setSelectedImageIndex] = useState(0);
 
   useEffect(() => {
     loadGalleryImages();
@@ -67,7 +72,23 @@ export default function Gallery() {
     }
   };
 
+  const getFilteredImages = () => {
+    if (activeFilter === 'all') return images;
+    return images.filter(img => img.subcategory === activeFilter);
+  };
 
+  const openImageModal = (imageIndex: number) => {
+    setSelectedImageIndex(imageIndex);
+    setModalOpen(true);
+  };
+
+  const closeImageModal = () => {
+    setModalOpen(false);
+  };
+
+  const navigateToImage = (index: number) => {
+    setSelectedImageIndex(index);
+  };
 
   if (loading) {
     return (
@@ -119,14 +140,18 @@ export default function Gallery() {
                 Artwork Gallery
               </h2>
               <p className="text-xl text-black/80">
-                {images.length} piece{images.length !== 1 ? 's' : ''} of artwork
+                {getFilteredImages().length} piece{getFilteredImages().length !== 1 ? 's' : ''} of artwork
               </p>
             </div>
 
             {/* Gallery Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
-              {images.map((image) => (
-                <div key={image.id} className="group cursor-pointer">
+              {getFilteredImages().map((image, index) => (
+                <div 
+                  key={image.id} 
+                  className="group cursor-pointer"
+                  onClick={() => openImageModal(index)}
+                >
                   <div className="glass-effect rounded-2xl overflow-hidden hover:scale-105 transition-all duration-500 image-card animate-fadeInUp">
                     {/* Artwork Image */}
                     <div className="w-full h-64 overflow-hidden">
@@ -164,6 +189,15 @@ export default function Gallery() {
           </>
         )}
       </div>
+
+      {/* Image Modal */}
+      <ImageModal
+        isOpen={modalOpen}
+        onClose={closeImageModal}
+        images={getFilteredImages()}
+        currentImageIndex={selectedImageIndex}
+        onNavigate={navigateToImage}
+      />
     </div>
   );
 }
