@@ -141,3 +141,80 @@ body::before {
   transform: translateY(-8px) scale(1.02);
   box-shadow: 0 25px 50px rgba(0, 0, 0, 0.15);
 }
+
+/* Unique Collaboration Animations */
+@keyframes collaborationPulse {
+  0%, 100% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgba(147, 51, 234, 0.4);
+  }
+  50% {
+    transform: scale(1.02);
+    box-shadow: 0 0 0 10px rgba(147, 51, 234, 0);
+  }
+}
+
+@keyframes diagonalShimmer {
+  0% {
+    transform: translateX(-100%) translateY(-100%) rotate(45deg);
+  }
+  100% {
+    transform: translateX(100%) translateY(100%) rotate(45deg);
+  }
+}
+
+@keyframes collaborationGlow {
+  0%, 100% {
+    box-shadow: 0 0 20px rgba(147, 51, 234, 0.3);
+  }
+  50% {
+    box-shadow: 0 0 40px rgba(147, 51, 234, 0.6);
+  }
+}
+
+.animate-collaborationPulse {
+  animation: collaborationPulse 3s ease-in-out infinite;
+}
+
+.animate-diagonalShimmer {
+  animation: diagonalShimmer 2s ease-in-out infinite;
+}
+
+.animate-collaborationGlow {
+  animation: collaborationGlow 2s ease-in-out infinite;
+}
+
+/* Enhanced Collaboration-specific effects */
+@keyframes collaborationSlideIn {
+  0% {
+    opacity: 0;
+    transform: translateX(50px) scale(0.9) rotate(2deg);
+    filter: blur(8px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(0) scale(1) rotate(0deg);
+    filter: blur(0px);
+  }
+}
+
+@keyframes collaborationSlideOut {
+  0% {
+    opacity: 1;
+    transform: translateX(0) scale(1) rotate(0deg);
+    filter: blur(0px);
+  }
+  100% {
+    opacity: 0;
+    transform: translateX(-50px) scale(0.9) rotate(-2deg);
+    filter: blur(8px);
+  }
+}
+
+.animate-collaborationSlideIn {
+  animation: collaborationSlideIn 0.8s ease-out;
+}
+
+.animate-collaborationSlideOut {
+  animation: collaborationSlideOut 0.6s ease-in;
+}

@@ -8,6 +8,7 @@ import AdminLogin from "./components/AdminLogin";
 import DynamicImage from "./components/DynamicImage";
 import DynamicImageCarousel from "./components/DynamicImageCarousel";
 import Dynamic3DCarousel from "./components/Dynamic3DCarousel";
+import CollaborationImages from "./components/CollaborationImages";
 import GuestBookModal from "./components/GuestBookModal";
 
 export default function Home() {
@@ -310,23 +311,10 @@ export default function Home() {
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
               {/* Left Side - Collaboration Image */}
-              <div className="flex justify-center">
+              <div className="flex justify-center items-center">
                 <div className="relative">
-                  <DynamicImage
-                    category="collaborations"
-                    className="w-full h-96 rounded-2xl shadow-2xl"
-                    intervalMs={6000}
-                    alt="Collaborations"
-                    fallbackContent={
-                      <div className="w-full h-96 bg-gradient-to-br from-emerald-400 to-teal-400 rounded-2xl shadow-2xl flex items-center justify-center">
-                        <div className="text-center text-white p-8">
-                          <div className="text-6xl mb-4">🤝</div>
-                          <h3 className="text-2xl font-bold mb-4">Collaboration Space</h3>
-                          <p className="text-lg opacity-90">Upload collaboration images</p>
-                          <p className="text-base opacity-75">in admin panel</p>
-                        </div>
-                      </div>
-                    }
+                  <CollaborationImages
+                    className="w-[117%] h-[28rem] rounded-2xl shadow-2xl transform"
                   />
                 </div>
               </div>
