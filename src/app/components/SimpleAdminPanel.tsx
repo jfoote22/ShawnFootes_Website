@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useContext, useCallback } from 'react';
 import { AuthContext } from '@/lib/contexts/AuthContext';
-import { collection, getDocs, deleteDoc, doc, query, where, orderBy, updateDoc } from 'firebase/firestore';
+import { collection, getDocs, deleteDoc, doc, query, where, orderBy, updateDoc, getDoc, setDoc } from 'firebase/firestore';
 import { ref, deleteObject } from 'firebase/storage';
 import { db, storage } from '@/lib/firebase/firebase';
 import SimpleImageUpload from './SimpleImageUpload';
@@ -36,7 +36,7 @@ type TabType = 'featured' | 'gallery' | 'store' | 'collaborations' | 'about' | '
 type StoreSubcategory = 'original-works' | 'prints' | 'apparel' | 'commissions';
 type FeaturedSubcategory = 'hero-images' | 'showcase-pieces' | 'featured-collections' | 'spotlight-works';
 type CollaborationsSubcategory = 'partnerships' | 'joint-projects' | 'gallery-collaborations' | 'artist-networks';
-type AboutSubcategory = 'studio-shots' | 'artist-portraits' | 'work-in-progress' | 'behind-scenes';
+type AboutSubcategory = 'studio-shots' | 'artist-portraits' | 'work-in-progress' | 'behind-scenes' | 'press-coverage';
 
 export default function SimpleAdminPanel({ isOpen, onClose }: AdminPanelProps) {
   const { isAdmin } = useContext(AuthContext);
@@ -56,6 +56,11 @@ export default function SimpleAdminPanel({ isOpen, onClose }: AdminPanelProps) {
   const [editingImageId, setEditingImageId] = useState<string | null>(null);
   const [editFormData, setEditFormData] = useState({ customName: '', price: '', description: '' });
   const [updateLoading, setUpdateLoading] = useState<string | null>(null);
+  
+  // Featured text editing state
+  const [featuredText, setFeaturedText] = useState({ title: 'About This Piece', content: '' });
+  const [editingFeaturedText, setEditingFeaturedText] = useState(false);
+  const [featuredTextLoading, setFeaturedTextLoading] = useState(false);
 
   const loadImages = useCallback(async () => {
     setLoading(true);
@@ -113,6 +118,9 @@ export default function SimpleAdminPanel({ isOpen, onClose }: AdminPanelProps) {
       if (activeTab === 'website-settings') {
         loadWebsiteBackground();
         loadGuestBookStats();
+      }
+      if (activeTab === 'featured') {
+        loadFeaturedText();
       }
     }
   }, [activeTab, storeSubcategory, featuredSubcategory, collaborationsSubcategory, aboutSubcategory, isOpen, isAdmin, loadImages]);
@@ -306,6 +314,44 @@ export default function SimpleAdminPanel({ isOpen, onClose }: AdminPanelProps) {
     }
   };
 
+  const loadFeaturedText = async () => {
+    try {
+      if (!db) return;
+      
+      const textDoc = await getDoc(doc(db, 'website-settings', 'featured-text'));
+      if (textDoc.exists()) {
+        const data = textDoc.data();
+        setFeaturedText({
+          title: data.title || 'About This Piece',
+          content: data.content || `"Art is Alchemy" represents the transformative power of artistic creation. This mixed media piece combines traditional techniques with modern experimentation, embodying the philosophy that art has the ability to transmute ordinary materials into something extraordinary.`
+        });
+      }
+    } catch (error) {
+      console.error('Error loading featured text:', error);
+    }
+  };
+
+  const saveFeaturedText = async () => {
+    try {
+      setFeaturedTextLoading(true);
+      if (!db) return;
+      
+      await setDoc(doc(db, 'website-settings', 'featured-text'), {
+        title: featuredText.title,
+        content: featuredText.content,
+        updatedAt: new Date()
+      });
+      
+      setEditingFeaturedText(false);
+      alert('Featured text updated successfully!');
+    } catch (error) {
+      console.error('Error saving featured text:', error);
+      alert('Error saving featured text. Check console for details.');
+    } finally {
+      setFeaturedTextLoading(false);
+    }
+  };
+
   const formatFileSize = (bytes: number) => {
     if (bytes === 0) return '0 Bytes';
     const k = 1024;
@@ -327,7 +373,7 @@ export default function SimpleAdminPanel({ isOpen, onClose }: AdminPanelProps) {
       className="fixed inset-0 bg-black/60 z-50 flex items-start justify-center p-4 pt-16"
       onClick={(e) => e.target === e.currentTarget && onClose()}
     >
-      <div className="bg-white rounded-2xl max-w-7xl w-full max-h-[85vh] overflow-hidden flex flex-col shadow-2xl">
+      <div className="bg-white text-black rounded-2xl max-w-7xl w-full max-h-[85vh] overflow-hidden flex flex-col shadow-2xl">
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b bg-gradient-to-r from-blue-50 to-indigo-50">
           <div>
@@ -394,15 +440,88 @@ export default function SimpleAdminPanel({ isOpen, onClose }: AdminPanelProps) {
               <strong> Spotlight Works:</strong> Special attention pieces
             </div>
             <div className="mt-3">
-              <button
-                onClick={() => setOrphanedImageFinderOpen(true)}
-                className="px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white rounded-lg text-sm font-medium transition-colors"
-              >
-                🔍 Find Orphaned Images
-              </button>
-              <span className="text-xs text-gray-500 ml-2">
-                Find images that don&apos;t appear in subcategory filters
-              </span>
+              {/* Hidden for now - can be restored later if needed */}
+              {false && (
+                <div>
+                  <button
+                    onClick={() => setOrphanedImageFinderOpen(true)}
+                    className="px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white rounded-lg text-sm font-medium transition-colors"
+                  >
+                    🔍 Find Orphaned Images
+                  </button>
+                  <span className="text-xs text-gray-500 ml-2">
+                    Find images that don&apos;t appear in subcategory filters
+                  </span>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* Featured Work Text Editor */}
+        {activeTab === 'featured' && (
+          <div className="p-4 border-b bg-gray-50">
+            <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/20">
+              <h3 className="text-xl font-semibold text-black mb-4">Featured Work Text</h3>
+              <p className="text-black/80 text-sm mb-4">
+                Edit the title and description text that appears next to the featured work on the homepage.
+              </p>
+              
+              {editingFeaturedText ? (
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-black mb-2">Title:</label>
+                    <input
+                      type="text"
+                      value={featuredText.title}
+                      onChange={(e) => setFeaturedText({ ...featuredText, title: e.target.value })}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      placeholder="Enter title..."
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-black mb-2">Content:</label>
+                    <textarea
+                      value={featuredText.content}
+                      onChange={(e) => setFeaturedText({ ...featuredText, content: e.target.value })}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 h-32 resize-none"
+                      placeholder="Enter description..."
+                    />
+                  </div>
+                  <div className="flex space-x-2">
+                    <button
+                      onClick={saveFeaturedText}
+                      disabled={featuredTextLoading}
+                      className="px-4 py-2 bg-green-500 hover:bg-green-600 disabled:bg-green-300 text-white rounded-lg text-sm transition-colors"
+                    >
+                      {featuredTextLoading ? 'Saving...' : 'Save Changes'}
+                    </button>
+                    <button
+                      onClick={() => {
+                        setEditingFeaturedText(false);
+                        loadFeaturedText(); // Reset to original values
+                      }}
+                      disabled={featuredTextLoading}
+                      className="px-4 py-2 bg-gray-500 hover:bg-gray-600 disabled:bg-gray-300 text-white rounded-lg text-sm transition-colors"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  <div className="bg-gray-50 rounded-lg p-4">
+                    <h5 className="font-semibold text-black mb-2">{featuredText.title}</h5>
+                    <p className="text-black/80 text-sm leading-relaxed">{featuredText.content}</p>
+                  </div>
+                  <button
+                    onClick={() => setEditingFeaturedText(true)}
+                    className="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg text-sm transition-colors"
+                  >
+                    Edit Text
+                  </button>
+                </div>
+              )}
             </div>
           </div>
         )}
@@ -440,7 +559,7 @@ export default function SimpleAdminPanel({ isOpen, onClose }: AdminPanelProps) {
           <div className="p-4 border-b bg-gray-50">
             <label className="block text-sm font-medium mb-2">About the Artist Category:</label>
             <div className="flex gap-2 mb-3">
-              {(['studio-shots', 'artist-portraits', 'work-in-progress', 'behind-scenes'] as AboutSubcategory[]).map((sub) => (
+              {(['studio-shots', 'artist-portraits', 'work-in-progress', 'behind-scenes', 'press-coverage'] as AboutSubcategory[]).map((sub) => (
                 <button
                   key={sub}
                   onClick={() => setAboutSubcategory(sub)}
@@ -458,7 +577,8 @@ export default function SimpleAdminPanel({ isOpen, onClose }: AdminPanelProps) {
               <strong>Studio Shots:</strong> Your workspace and creative environment • 
               <strong> Artist Portraits:</strong> Professional photos and self-portraits • 
               <strong> Work in Progress:</strong> Artwork during creation process • 
-              <strong> Behind Scenes:</strong> Creative process and daily studio life
+              <strong> Behind Scenes:</strong> Creative process and daily studio life • 
+              <strong> Press Coverage:</strong> News articles, interviews, and press materials
             </div>
           </div>
         )}
@@ -493,7 +613,7 @@ export default function SimpleAdminPanel({ isOpen, onClose }: AdminPanelProps) {
 
         {/* Website Settings Tab */}
         {activeTab === 'website-settings' && (
-          <div className="space-y-6">
+          <div className="space-y-6 max-h-[60vh] overflow-y-auto pr-2">
             <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/20">
               <h3 className="text-xl font-semibold text-black mb-4">Website Background Image</h3>
               <p className="text-black/80 text-sm mb-4">
@@ -580,6 +700,7 @@ export default function SimpleAdminPanel({ isOpen, onClose }: AdminPanelProps) {
                 </button>
               </div>
             </div>
+
 
             <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/20">
               <h4 className="text-lg font-semibold text-black mb-3">Tips for Background Images</h4>

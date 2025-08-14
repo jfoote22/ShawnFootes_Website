@@ -141,7 +141,7 @@ export default function Store() {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
               {images.map((image) => (
                 <div key={image.id} className="group cursor-pointer">
-                  <div className="bg-white/10 backdrop-blur-sm rounded-2xl overflow-hidden border border-white/20 hover:bg-white/20 transition-all duration-300 hover:scale-105">
+                  <div className="glass-effect rounded-2xl overflow-hidden hover:scale-105 transition-all duration-500 image-card animate-fadeInUp">
                     {/* Product Image */}
                     <div className="w-full h-48 overflow-hidden">
                       <img

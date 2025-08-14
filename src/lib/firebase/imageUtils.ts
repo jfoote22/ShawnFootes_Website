@@ -11,7 +11,7 @@ export interface ImageData {
   price?: string;
   description?: string;
   // Standard fields
-  category: 'featured' | 'gallery' | 'store';
+  category: 'featured' | 'gallery' | 'store' | 'collaborations' | 'about';
   subcategory?: string; // For store: 'prints', 'original-works', 'apparel', 'other'
   uploadedAt: any; // Can be Firestore Timestamp or Date
   originalName?: string;
@@ -54,7 +54,10 @@ export async function uploadImage(
       filename,
       category: category as ImageData['category'],
       subcategory,
-      uploadedAt: new Date()
+      uploadedAt: new Date(),
+      originalName: file.name,
+      size: file.size,
+      type: file.type
     };
     
     console.log('Saving metadata to Firestore...', imageData);

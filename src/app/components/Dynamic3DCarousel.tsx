@@ -223,21 +223,47 @@ export default function Dynamic3DCarousel({
           border-radius: 12px;
           overflow: hidden;
           box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
-          transition: all 0.3s ease;
+          transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
           position: relative;
           background: rgba(255, 255, 255, 0.1);
           backdrop-filter: blur(10px);
-          border: 1px solid rgba(255, 255, 255, 0.2);
+          border: 2px solid rgba(200, 200, 200, 0.4);
+        }
+
+        .carousel-3d-image::before {
+          content: '';
+          position: absolute;
+          top: 0;
+          left: -100%;
+          width: 100%;
+          height: 100%;
+          background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+          animation: shimmer 3s ease-in-out infinite;
+          z-index: 1;
         }
 
         .carousel-3d-image:hover {
-          transform: scale(1.05);
-          box-shadow: 0 12px 48px rgba(0, 0, 0, 0.4);
+          transform: scale(1.08);
+          box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+          border: 2px solid rgba(200, 200, 200, 0.8);
+          background: rgba(255, 255, 255, 0.2);
+          backdrop-filter: blur(15px);
+        }
+
+        .carousel-3d-image:hover::before {
+          animation-duration: 2s;
         }
 
         .carousel-3d-image.active {
-          transform: scale(1.1);
-          box-shadow: 0 16px 64px rgba(0, 0, 0, 0.5);
+          transform: scale(1.12);
+          box-shadow: 0 25px 80px rgba(0, 0, 0, 0.5);
+          border: 2px solid rgba(200, 200, 200, 1);
+          background: rgba(255, 255, 255, 0.25);
+          backdrop-filter: blur(20px);
+        }
+
+        .carousel-3d-image.active::before {
+          animation-duration: 1.5s;
         }
 
         .carousel-3d-image img {
@@ -249,10 +275,12 @@ export default function Dynamic3DCarousel({
           bottom: 0;
           left: 0;
           right: 0;
-          background: linear-gradient(transparent, rgba(0, 0, 0, 0.8));
+          background: linear-gradient(transparent, rgba(0, 0, 0, 0.7));
+          backdrop-filter: blur(10px);
           padding: 16px;
           transform: translateY(100%);
-          transition: transform 0.3s ease;
+          transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+          border-top: 1px solid rgba(255, 255, 255, 0.2);
         }
 
         .carousel-3d-image:hover .carousel-3d-overlay,

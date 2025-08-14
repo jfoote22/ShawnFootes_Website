@@ -2,6 +2,8 @@
 import Link from "next/link";
 import Image from "next/image";
 import { useEffect, useState } from "react";
+import { doc, getDoc } from "firebase/firestore";
+import { db } from "@/lib/firebase/firebase";
 import AdminLogin from "./components/AdminLogin";
 import DynamicImage from "./components/DynamicImage";
 import DynamicImageCarousel from "./components/DynamicImageCarousel";
@@ -11,6 +13,27 @@ import GuestBookModal from "./components/GuestBookModal";
 export default function Home() {
   const [backgroundImage, setBackgroundImage] = useState<string | null>(null);
   const [guestBookOpen, setGuestBookOpen] = useState(false);
+  const [featuredText, setFeaturedText] = useState({
+    title: "About This Piece",
+    content: `"Art is Alchemy" represents the transformative power of artistic creation. This mixed media piece combines traditional techniques with modern experimentation, embodying the philosophy that art has the ability to transmute ordinary materials into something extraordinary.`
+  });
+
+  const loadFeaturedText = async () => {
+    try {
+      if (!db) return;
+      
+      const textDoc = await getDoc(doc(db, 'website-settings', 'featured-text'));
+      if (textDoc.exists()) {
+        const data = textDoc.data();
+        setFeaturedText({
+          title: data.title || "About This Piece",
+          content: data.content || `"Art is Alchemy" represents the transformative power of artistic creation. This mixed media piece combines traditional techniques with modern experimentation, embodying the philosophy that art has the ability to transmute ordinary materials into something extraordinary.`
+        });
+      }
+    } catch (error) {
+      console.error('Error loading featured text:', error);
+    }
+  };
 
   useEffect(() => {
     // Load background image from localStorage
@@ -18,6 +41,9 @@ export default function Home() {
     if (savedBackground) {
       setBackgroundImage(savedBackground);
     }
+    
+    // Load featured text from Firebase
+    loadFeaturedText();
   }, []);
 
   return (
@@ -138,10 +164,10 @@ export default function Home() {
               </Link>
               
               {/* Featured Artwork Details */}
-              <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/20">
-                <h4 className="text-xl font-semibold text-black mb-4">About This Piece</h4>
-                <p className="text-black/80 leading-relaxed">
-                  &quot;Art is Alchemy&quot; represents the transformative power of artistic creation. This mixed media piece combines traditional techniques with modern experimentation, embodying the philosophy that art has the ability to transmute ordinary materials into something extraordinary.
+              <div className="glass-effect rounded-2xl p-6 group hover:shadow-2xl transition-all duration-500">
+                <h4 className="text-xl font-semibold text-black mb-4 group-hover:text-black transition-colors duration-300">{featuredText.title}</h4>
+                <p className="text-black/80 group-hover:text-black/90 leading-relaxed transition-colors duration-300">
+                  {featuredText.content}
                 </p>
               </div>
             </div>
@@ -160,7 +186,7 @@ export default function Home() {
                 </div>
               
               {/* 3D Carousel Container */}
-              <div className="relative rounded-2xl bg-white/10 backdrop-blur-sm p-6 border border-white/20 mt-32">
+              <div className="relative rounded-2xl glass-effect p-6 mt-32 group hover:shadow-2xl transition-all duration-500">
                 <Dynamic3DCarousel
                   category="gallery"
                   count={6}
@@ -284,7 +310,7 @@ export default function Home() {
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
               {/* Left Side - Collaboration Image */}
-              <div className="flex justify-center lg:justify-start">
+              <div className="flex justify-center">
                 <div className="relative">
                   <DynamicImage
                     category="collaborations"
@@ -324,10 +350,18 @@ export default function Home() {
                 </div>
                 
                 {/* Collaboration CTA */}
-                <div className="pt-4">
+                <div className="pt-4 space-y-4">
                   <button className="bg-white/20 hover:bg-white/30 backdrop-blur-sm text-black px-8 py-4 rounded-full text-lg font-semibold transition-all duration-300 border border-white/30 hover:border-white/50">
                     Start a Conversation
                   </button>
+                  <div>
+                    <a 
+                      href="/collaborations" 
+                      className="inline-block bg-black/10 hover:bg-black/20 backdrop-blur-sm text-black px-8 py-4 rounded-full text-lg font-semibold transition-all duration-300 border border-black/20 hover:border-black/30"
+                    >
+                      Previous Collaborations
+                    </a>
+                  </div>
                 </div>
               </div>
             </div>
@@ -374,63 +408,69 @@ export default function Home() {
 
             {/* About the Artist Image Grid */}
             <div className="mt-16">
-              <h3 className="text-2xl font-bold text-black mb-8 text-center">Studio & Process</h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                {/* Studio Shots */}
-                <DynamicImage
-                  category="about"
-                  subcategory="studio-shots"
-                  className="w-full h-32 rounded-xl"
-                  intervalMs={12000}
-                  alt="Studio Shots"
-                  fallbackContent={
-                    <div className="w-full h-32 bg-gradient-to-br from-amber-400 to-yellow-400 rounded-xl flex items-center justify-center">
-                      <p className="text-white font-semibold text-sm">Studio</p>
-                    </div>
-                  }
-                />
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                {/* Studio */}
+                <a href="/studio" className="group cursor-pointer">
+                  <DynamicImage
+                    category="about"
+                    subcategory="studio-shots"
+                    className="w-full h-48 rounded-xl group-hover:scale-105 transition-transform duration-300"
+                    intervalMs={12000}
+                    alt="Studio"
+                    fallbackContent={
+                      <div className="w-full h-48 bg-gradient-to-br from-amber-400 to-yellow-400 rounded-xl flex items-center justify-center group-hover:scale-105 transition-transform duration-300">
+                        <div className="text-center text-white">
+                          <div className="text-3xl mb-2">🏠</div>
+                          <p className="font-semibold text-lg">Studio</p>
+                        </div>
+                      </div>
+                    }
+                  />
+                  <h4 className="text-lg font-semibold text-black mt-4 text-center group-hover:text-black/80 transition-colors">Studio</h4>
+                  <p className="text-black/70 text-sm text-center mt-2">Explore the creative workspace</p>
+                </a>
                 
-                {/* Work in Progress */}
-                <DynamicImage
-                  category="about"
-                  subcategory="work-in-progress"
-                  className="w-full h-32 rounded-xl"
-                  intervalMs={13000}
-                  alt="Work in Progress"
-                  fallbackContent={
-                    <div className="w-full h-32 bg-gradient-to-br from-cyan-400 to-blue-400 rounded-xl flex items-center justify-center">
-                      <p className="text-white font-semibold text-sm">In Progress</p>
-                    </div>
-                  }
-                />
+                {/* Process */}
+                <a href="/process" className="group cursor-pointer">
+                  <DynamicImage
+                    category="about"
+                    subcategory="work-in-progress"
+                    className="w-full h-48 rounded-xl group-hover:scale-105 transition-transform duration-300"
+                    intervalMs={13000}
+                    alt="Art Process"
+                    fallbackContent={
+                      <div className="w-full h-48 bg-gradient-to-br from-cyan-400 to-blue-400 rounded-xl flex items-center justify-center group-hover:scale-105 transition-transform duration-300">
+                        <div className="text-center text-white">
+                          <div className="text-3xl mb-2">🎨</div>
+                          <p className="font-semibold text-lg">Process</p>
+                        </div>
+                      </div>
+                    }
+                  />
+                  <h4 className="text-lg font-semibold text-black mt-4 text-center group-hover:text-black/80 transition-colors">Process</h4>
+                  <p className="text-black/70 text-sm text-center mt-2">Behind the scenes of creation</p>
+                </a>
                 
-                {/* Behind Scenes */}
-                <DynamicImage
-                  category="about"
-                  subcategory="behind-scenes"
-                  className="w-full h-32 rounded-xl"
-                  intervalMs={14000}
-                  alt="Behind the Scenes"
-                  fallbackContent={
-                    <div className="w-full h-32 bg-gradient-to-br from-violet-400 to-purple-400 rounded-xl flex items-center justify-center">
-                      <p className="text-white font-semibold text-sm">Behind Scenes</p>
-                    </div>
-                  }
-                />
-                
-                {/* Artist Portraits */}
-                <DynamicImage
-                  category="about"
-                  subcategory="artist-portraits"
-                  className="w-full h-32 rounded-xl"
-                  intervalMs={15000}
-                  alt="Artist Portraits"
-                  fallbackContent={
-                    <div className="w-full h-32 bg-gradient-to-br from-emerald-400 to-teal-400 rounded-xl flex items-center justify-center">
-                      <p className="text-white font-semibold text-sm">Portraits</p>
-                    </div>
-                  }
-                />
+                {/* Press */}
+                <a href="/press" className="group cursor-pointer">
+                  <DynamicImage
+                    category="about"
+                    subcategory="press-coverage"
+                    className="w-full h-48 rounded-xl group-hover:scale-105 transition-transform duration-300"
+                    intervalMs={14000}
+                    alt="Press Coverage"
+                    fallbackContent={
+                      <div className="w-full h-48 bg-gradient-to-br from-violet-400 to-purple-400 rounded-xl flex items-center justify-center group-hover:scale-105 transition-transform duration-300">
+                        <div className="text-center text-white">
+                          <div className="text-3xl mb-2">📰</div>
+                          <p className="font-semibold text-lg">Press</p>
+                        </div>
+                      </div>
+                    }
+                  />
+                  <h4 className="text-lg font-semibold text-black mt-4 text-center group-hover:text-black/80 transition-colors">Press</h4>
+                  <p className="text-black/70 text-sm text-center mt-2">News, interviews & articles</p>
+                </a>
               </div>
             </div>
           </div>

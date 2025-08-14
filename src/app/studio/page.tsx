@@ -5,7 +5,7 @@ import { useState, useEffect } from "react";
 import { collection, getDocs, query, where } from "firebase/firestore";
 import { db } from "@/lib/firebase/firebase";
 
-interface GalleryImage {
+interface StudioImage {
   id: string;
   url: string;
   filename: string;
@@ -14,23 +14,24 @@ interface GalleryImage {
   customName?: string;
   price?: string;
   description?: string;
+  sortOrder?: number;
   // Standard fields
   category: string;
+  subcategory?: string;
   uploadedAt: any;
   size: number;
   type: string;
 }
 
-export default function Gallery() {
-  const [images, setImages] = useState<GalleryImage[]>([]);
+export default function Studio() {
+  const [images, setImages] = useState<StudioImage[]>([]);
   const [loading, setLoading] = useState(true);
-  const [activeFilter, setActiveFilter] = useState('all');
 
   useEffect(() => {
-    loadGalleryImages();
+    loadStudioImages();
   }, []);
 
-  const loadGalleryImages = async () => {
+  const loadStudioImages = async () => {
     try {
       setLoading(true);
       
@@ -43,17 +44,26 @@ export default function Gallery() {
       
       const q = query(
         collection(db, 'images'),
-        where('category', '==', 'gallery')
+        where('category', '==', 'about'),
+        where('subcategory', '==', 'studio-shots')
       );
       
       const querySnapshot = await getDocs(q);
       const imageList = querySnapshot.docs.map(doc => ({
         id: doc.id,
         ...doc.data()
-      })) as GalleryImage[];
+      })) as StudioImage[];
 
-      // Sort by upload date (newest first)
+      // Sort by custom order first, then by upload date
       imageList.sort((a, b) => {
+        // If both have sortOrder, use that
+        if (a.sortOrder !== undefined && b.sortOrder !== undefined) {
+          return a.sortOrder - b.sortOrder;
+        }
+        // If only one has sortOrder, prioritize it
+        if (a.sortOrder !== undefined) return -1;
+        if (b.sortOrder !== undefined) return 1;
+        // If neither has sortOrder, sort by upload date (newest first)
         const dateA = a.uploadedAt?.toDate?.() || new Date(a.uploadedAt) || new Date(0);
         const dateB = b.uploadedAt?.toDate?.() || new Date(b.uploadedAt) || new Date(0);
         return dateB.getTime() - dateA.getTime();
@@ -61,20 +71,18 @@ export default function Gallery() {
 
       setImages(imageList);
     } catch (error) {
-      console.error('Error loading gallery images:', error);
+      console.error('Error loading studio images:', error);
     } finally {
       setLoading(false);
     }
   };
-
-
 
   if (loading) {
     return (
       <div className="min-h-screen bg-black/20 backdrop-blur-sm flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white mx-auto mb-4"></div>
-          <p className="text-black text-lg">Loading gallery...</p>
+          <p className="text-black text-lg">Loading studio...</p>
         </div>
       </div>
     );
@@ -92,43 +100,47 @@ export default function Gallery() {
             >
               ← Back to Home
             </Link>
-            <h1 className="text-4xl font-bold text-black">Gallery</h1>
+            <h1 className="text-4xl font-bold text-black">Studio</h1>
             <div className="w-24"></div> {/* Spacer for centering */}
           </div>
         </div>
       </div>
 
-      {/* Gallery Content */}
+      {/* Studio Content */}
       <div className="container mx-auto px-8 py-12">
         {images.length === 0 ? (
           <div className="text-center py-20">
-            <div className="text-6xl mb-6">📷</div>
-            <h2 className="text-3xl font-bold text-black mb-4">Gallery is Empty</h2>
+            <div className="text-6xl mb-6">🏠</div>
+            <h2 className="text-3xl font-bold text-black mb-4">No Studio Images Yet</h2>
             <p className="text-xl text-black/80 mb-8">
-              No images have been uploaded to the gallery yet.
+              No studio images have been uploaded yet.
             </p>
             <p className="text-lg text-black/60">
-              Images uploaded through the admin panel will appear here.
+              Studio images uploaded through the admin panel will appear here.
             </p>
           </div>
         ) : (
           <>
-            {/* Gallery Stats */}
+            {/* Studio Header */}
             <div className="text-center mb-12">
-              <h2 className="text-3xl font-bold text-black mb-4">
-                Artwork Gallery
+              <h2 className="text-4xl font-bold text-black mb-4">
+                Creative Workspace
               </h2>
-              <p className="text-xl text-black/80">
-                {images.length} piece{images.length !== 1 ? 's' : ''} of artwork
+              <p className="text-xl text-black/80 mb-6">
+                {images.length} image{images.length !== 1 ? 's' : ''} showcasing the creative environment
+              </p>
+              <p className="text-lg text-black/70 max-w-3xl mx-auto">
+                Step inside the studio where creativity comes to life. Explore the workspace, 
+                tools, and environment that inspire and enable artistic creation.
               </p>
             </div>
 
-            {/* Gallery Grid */}
+            {/* Studio Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
               {images.map((image) => (
                 <div key={image.id} className="group cursor-pointer">
-                  <div className="glass-effect rounded-2xl overflow-hidden hover:scale-105 transition-all duration-500 image-card animate-fadeInUp">
-                    {/* Artwork Image */}
+                  <div className="bg-white/10 backdrop-blur-sm rounded-2xl overflow-hidden border border-white/20 hover:bg-white/20 transition-all duration-300 hover:scale-105">
+                    {/* Studio Image */}
                     <div className="w-full h-64 overflow-hidden">
                       <img
                         src={image.url}
@@ -137,18 +149,11 @@ export default function Gallery() {
                       />
                     </div>
                     
-                    {/* Artwork Details */}
+                    {/* Image Details */}
                     <div className="p-6">
                       <h3 className="text-xl font-semibold text-black mb-3 truncate" title={image.customName || image.originalName}>
                         {image.customName || image.originalName}
                       </h3>
-                      
-                      {/* Price */}
-                      {image.price && (
-                        <div className="text-lg font-bold text-green-700 mb-3">
-                          {image.price.startsWith('$') ? image.price : `$${image.price}`}
-                        </div>
-                      )}
                       
                       {/* Description */}
                       {image.description && (
@@ -160,6 +165,18 @@ export default function Gallery() {
                   </div>
                 </div>
               ))}
+            </div>
+
+            {/* Call to Action */}
+            <div className="text-center mt-16 py-12 bg-white/5 backdrop-blur-sm rounded-2xl border border-white/10">
+              <h3 className="text-3xl font-bold text-black mb-4">Visit the Studio</h3>
+              <p className="text-xl text-black/80 mb-8 max-w-2xl mx-auto">
+                Interested in seeing the creative process in person? Studio visits can be arranged 
+                for collectors, fellow artists, and art enthusiasts.
+              </p>
+              <button className="bg-white/20 hover:bg-white/30 backdrop-blur-sm text-black px-8 py-4 rounded-full text-lg font-semibold transition-all duration-300 border border-white/30 hover:border-white/50">
+                Schedule a Studio Visit
+              </button>
             </div>
           </>
         )}
