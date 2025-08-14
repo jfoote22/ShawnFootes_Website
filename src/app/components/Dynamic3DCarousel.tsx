@@ -171,7 +171,7 @@ export default function Dynamic3DCarousel({
   }
 
   return (
-         <div className={`relative h-96 ${className}`}>
+         <div className={`relative h-[28rem] ${className}`}>
       <div className="carousel-3d-container">
         <div 
           className="carousel-3d"
@@ -188,23 +188,19 @@ export default function Dynamic3DCarousel({
                 key={`${image.id}-${index}`}
                 className="carousel-3d-item"
                                  style={{
-                   transform: `rotateY(${angle}deg) translateZ(300px)`,
+                   transform: `rotateY(${angle}deg) translateZ(315px)`,
                  }}
               >
                               <div 
-                className={`carousel-3d-image ${isActive ? 'active' : ''} ${isActive ? 'cursor-pointer' : ''}`}
-                onClick={isActive ? () => openModal(index) : undefined}
+                className={`carousel-3d-image ${isActive ? 'active' : ''} ${isActive && category !== 'collaborations' ? 'cursor-pointer' : ''}`}
+                onClick={isActive && category !== 'collaborations' ? () => openModal(index) : undefined}
               >
                 <img
                   src={image.url}
                   alt={image.customName || image.originalName}
-                  className="w-full h-full object-cover"
+                  className="w-full h-full object-contain"
                 />
-                <div className="carousel-3d-overlay">
-                  <h3 className="text-black font-semibold text-lg">
-                    {image.customName || image.originalName}
-                  </h3>
-                </div>
+
               </div>
               </div>
             );
@@ -322,16 +318,16 @@ export default function Dynamic3DCarousel({
 
                  .carousel-3d {
            position: relative;
-           width: 300px;
-           height: 300px;
+           width: 315px;
+           height: 315px;
            transform-style: preserve-3d;
            transition: transform 0.8s cubic-bezier(0.4, 0.0, 0.2, 1);
          }
 
          .carousel-3d-item {
            position: absolute;
-           width: 300px;
-           height: 300px;
+           width: 315px;
+           height: 315px;
            backface-visibility: hidden;
          }
 
@@ -343,8 +339,6 @@ export default function Dynamic3DCarousel({
           box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
           transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
           position: relative;
-          background: rgba(255, 255, 255, 0.1);
-          backdrop-filter: blur(10px);
           border: 2px solid rgba(200, 200, 200, 0.4);
         }
 
@@ -365,8 +359,6 @@ export default function Dynamic3DCarousel({
           transform: scale(1.08);
           box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
           border: 2px solid rgba(200, 200, 200, 0.8);
-          background: rgba(255, 255, 255, 0.2);
-          backdrop-filter: blur(15px);
         }
 
         .carousel-3d-image:hover::before {
@@ -377,8 +369,6 @@ export default function Dynamic3DCarousel({
           transform: scale(1.12);
           box-shadow: 0 25px 80px rgba(0, 0, 0, 0.5);
           border: 2px solid rgba(200, 200, 200, 1);
-          background: rgba(255, 255, 255, 0.25);
-          backdrop-filter: blur(20px);
         }
 
         .carousel-3d-image.active::before {
@@ -407,50 +397,29 @@ export default function Dynamic3DCarousel({
           border-radius: 12px;
         }
 
-        .carousel-3d-overlay {
-          position: absolute;
-          bottom: 0;
-          left: 0;
-          right: 0;
-          background: linear-gradient(transparent, rgba(255, 255, 255, 0.4));
-          backdrop-filter: blur(8px);
-          padding: 16px;
-          transform: translateY(0);
-          transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
-          border-top: 1px solid rgba(255, 255, 255, 0.4);
-          opacity: 1;
+        @media (max-width: 768px) {
+          .carousel-3d {
+            width: 250px;
+            height: 250px;
+          }
+
+          .carousel-3d-item {
+            width: 250px;
+            height: 250px;
+          }
         }
 
-        .carousel-3d-image:hover .carousel-3d-overlay {
-          transform: translateY(100%);
-          opacity: 0;
+        @media (max-width: 480px) {
+          .carousel-3d {
+            width: 200px;
+            height: 200px;
+          }
+
+          .carousel-3d-item {
+            width: 200px;
+            height: 200px;
+          }
         }
-
-        .carousel-3d-image.active .carousel-3d-overlay {
-          transform: translateY(0);
-          opacity: 1;
-        }
-
-        .carousel-3d-image.active:hover .carousel-3d-overlay {
-          transform: translateY(100%);
-          opacity: 0;
-        }
-
-                 @media (max-width: 768px) {
-           .carousel-3d {
-             width: 225px;
-             height: 225px;
-           }
-
-           .carousel-3d-item {
-             width: 225px;
-             height: 225px;
-           }
-
-           .carousel-3d-item {
-             transform: rotateY(var(--angle)) translateZ(225px) !important;
-           }
-         }
       `}</style>
     </div>
   );

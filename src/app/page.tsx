@@ -15,6 +15,7 @@ import GuestBookModal from "./components/GuestBookModal";
 export default function Home() {
   const [backgroundImage, setBackgroundImage] = useState<string | null>(null);
   const [guestBookOpen, setGuestBookOpen] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [featuredText, setFeaturedText] = useState({
     title: "About This Piece",
     content: `"Art is Alchemy" represents the transformative power of artistic creation. This mixed media piece combines traditional techniques with modern experimentation, embodying the philosophy that art has the ability to transmute ordinary materials into something extraordinary.`
@@ -69,17 +70,17 @@ export default function Home() {
         {/* Header Navigation */}
         <header className="fixed top-0 left-0 right-0 z-50 bg-white/80 backdrop-blur-sm border-b border-white/20">
           <div className="container mx-auto px-8">
-            <div className="flex items-center h-16">
-              {/* Admin Login - Moved to far left */}
-              <AdminLogin />
-              
-              {/* Logo - Moved closer to admin login */}
-              <div className="text-2xl font-bold text-black ml-2">
-                Shawn Foote
+            <div className="flex items-center justify-between h-16">
+              {/* Left Side - Admin Login & Logo */}
+              <div className="flex items-center">
+                <AdminLogin />
+                <div className="text-2xl font-bold text-black ml-2">
+                  Shawn Foote
+                </div>
               </div>
 
-              {/* Centered Navigation Menu */}
-              <nav className="flex items-center space-x-8 mx-auto">
+              {/* Desktop Navigation Menu - Hidden on mobile */}
+              <nav className="hidden lg:flex items-center space-x-8">
                 <Link href="/featured-work" className="text-black/80 hover:text-black transition-colors font-medium">
                   Featured Work
                 </Link>
@@ -100,13 +101,87 @@ export default function Home() {
                 </a>
               </nav>
 
-              {/* Guest Book Button - Top Right */}
-              <button
-                onClick={() => setGuestBookOpen(true)}
-                className="px-4 py-2 bg-white/20 hover:bg-white/30 backdrop-blur-sm text-black rounded-lg text-sm font-medium transition-all duration-300 border border-white/30 hover:border-white/50"
-              >
-                Sign My Guest Book
-              </button>
+              {/* Right Side - Guest Book Button & Mobile Menu */}
+              <div className="flex items-center space-x-4">
+                {/* Guest Book Button - Hidden on mobile */}
+                <button
+                  onClick={() => setGuestBookOpen(true)}
+                  className="hidden md:block px-4 py-2 bg-white/20 hover:bg-white/30 backdrop-blur-sm text-black rounded-lg text-sm font-medium transition-all duration-300 border border-white/30 hover:border-white/50"
+                >
+                  Sign My Guest Book
+                </button>
+
+                {/* Mobile Menu Button */}
+                <button
+                  onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+                  className="lg:hidden p-2 text-black hover:bg-white/20 rounded-lg transition-colors"
+                  aria-label="Toggle mobile menu"
+                >
+                  <div className="w-6 h-6 flex flex-col justify-center items-center">
+                    <span className={`block w-5 h-0.5 bg-black transition-all duration-300 ${mobileMenuOpen ? 'rotate-45 translate-y-1' : '-translate-y-1'}`}></span>
+                    <span className={`block w-5 h-0.5 bg-black transition-all duration-300 ${mobileMenuOpen ? 'opacity-0' : 'opacity-100'}`}></span>
+                    <span className={`block w-5 h-0.5 bg-black transition-all duration-300 ${mobileMenuOpen ? '-rotate-45 -translate-y-1' : 'translate-y-1'}`}></span>
+                  </div>
+                </button>
+              </div>
+            </div>
+
+            {/* Mobile Navigation Menu */}
+            <div className={`lg:hidden transition-all duration-300 ease-in-out overflow-hidden ${mobileMenuOpen ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'}`}>
+              <nav className="py-4 space-y-4 border-t border-white/20">
+                <Link 
+                  href="/featured-work" 
+                  className="block text-black/80 hover:text-black transition-colors font-medium py-2"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  Featured Work
+                </Link>
+                <Link 
+                  href="/gallery" 
+                  className="block text-black/80 hover:text-black transition-colors font-medium py-2"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  Gallery
+                </Link>
+                <Link 
+                  href="/store" 
+                  className="block text-black/80 hover:text-black transition-colors font-medium py-2"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  Store
+                </Link>
+                <Link 
+                  href="/collaborations" 
+                  className="block text-black/80 hover:text-black transition-colors font-medium py-2"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  Collaborations
+                </Link>
+                <a 
+                  href="#about" 
+                  className="block text-black/80 hover:text-black transition-colors font-medium py-2"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  About
+                </a>
+                <a 
+                  href="#contact" 
+                  className="block text-black/80 hover:text-black transition-colors font-medium py-2"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  Contact
+                </a>
+                {/* Mobile Guest Book Button */}
+                <button
+                  onClick={() => {
+                    setGuestBookOpen(true);
+                    setMobileMenuOpen(false);
+                  }}
+                  className="w-full text-left px-0 py-2 bg-transparent hover:bg-white/20 text-black/80 hover:text-black transition-colors font-medium rounded-lg"
+                >
+                  Sign My Guest Book
+                </button>
+              </nav>
             </div>
           </div>
         </header>
