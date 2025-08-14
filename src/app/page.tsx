@@ -8,7 +8,8 @@ import AdminLogin from "./components/AdminLogin";
 import DynamicImage from "./components/DynamicImage";
 import DynamicImageCarousel from "./components/DynamicImageCarousel";
 import Dynamic3DCarousel from "./components/Dynamic3DCarousel";
-import CollaborationImages from "./components/CollaborationImages";
+import Dynamic3DCarouselLarge from "./components/Dynamic3DCarouselLarge";
+import SwiperGalleryCarousel from "./components/SwiperGalleryCarousel";
 import GuestBookModal from "./components/GuestBookModal";
 
 export default function Home() {
@@ -175,9 +176,9 @@ export default function Home() {
 
                           {/* Right Side - Gallery Carousel */}
               <div className="space-y-6">
-                <h2 className="text-4xl font-bold text-black mb-6">Gallery Preview</h2>
-              
-                <div className="text-left mb-6">
+                {/* Header with inline button */}
+                <div className="flex items-center gap-4 mb-6">
+                  <h2 className="text-4xl font-bold text-black">Gallery Preview</h2>
                   <Link 
                     href="/gallery" 
                     className="inline-block bg-white/20 hover:bg-white/30 backdrop-blur-sm text-black px-6 py-3 rounded-full text-base font-semibold transition-all duration-300 border border-white/30 hover:border-white/50"
@@ -186,8 +187,22 @@ export default function Home() {
                   </Link>
                 </div>
               
-              {/* 3D Carousel Container */}
-              <div className="relative rounded-2xl glass-effect p-6 mt-32 group hover:shadow-2xl transition-all duration-500">
+              {/* Modern Swiper Carousel */}
+              <div className="relative rounded-2xl p-6 mt-32 group transition-all duration-500">
+                <SwiperGalleryCarousel
+                  category="gallery"
+                  intervalMs={5000}
+                  className="w-full"
+                />
+              </div>
+
+              {/* Previous Carousels - Hidden for Testing */}
+              <div className="hidden">
+                <Dynamic3DCarouselLarge
+                  category="gallery"
+                  intervalMs={5000}
+                  className="w-full"
+                />
                 <Dynamic3DCarousel
                   category="gallery"
                   count={6}
@@ -203,17 +218,16 @@ export default function Home() {
           </div>
 
           {/* Store Preview Section */}
-          <div className="container mx-auto px-8 mt-40" id="store">
-            <div className="text-left mb-8">
-              <h2 className="text-4xl font-bold text-black mb-6">Store</h2>
-              <div className="text-left mb-12">
-                <Link 
-                  href="/store" 
-                  className="inline-block bg-white/20 hover:bg-white/30 backdrop-blur-sm text-black px-8 py-4 rounded-full text-lg font-semibold transition-all duration-300 border border-white/30 hover:border-white/50"
-                >
-                  Browse All Products
-                </Link>
-              </div>
+          <div className="container mx-auto px-8 mt-4" id="store">
+            {/* Header with inline button */}
+            <div className="flex items-center gap-4 mb-12">
+              <h2 className="text-4xl font-bold text-black">Store</h2>
+              <Link 
+                href="/store" 
+                className="inline-block bg-white/20 hover:bg-white/30 backdrop-blur-sm text-black px-8 py-4 rounded-full text-lg font-semibold transition-all duration-300 border border-white/30 hover:border-white/50"
+              >
+                Browse All Products
+              </Link>
             </div>
           
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-8">
@@ -330,11 +344,14 @@ export default function Home() {
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-              {/* Left Side - Collaboration Image */}
+              {/* Left Side - Collaboration Carousel */}
               <div className="flex justify-center items-center">
                 <div className="relative">
-                  <CollaborationImages
-                    className="w-[117%] h-[28rem] rounded-2xl shadow-2xl transform"
+                  <Dynamic3DCarousel
+                    category="collaborations"
+                    count={6}
+                    intervalMs={4000}
+                    className="w-[117%] h-[28rem]"
                   />
                 </div>
               </div>

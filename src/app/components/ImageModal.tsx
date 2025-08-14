@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 
 interface ImageData {
   id: string;
@@ -28,8 +29,11 @@ export default function ImageModal({
 }: ImageModalProps) {
   const [imageLoaded, setImageLoaded] = useState(false);
   const [isTransitioning, setIsTransitioning] = useState(false);
+  const [mounted, setMounted] = useState(false);
 
   const currentImage = images[currentImageIndex];
+
+  useEffect(() => setMounted(true), []);
 
   const navigatePrevious = () => {
     if (images.length === 0) return;
@@ -82,90 +86,86 @@ export default function ImageModal({
 
   if (!isOpen || !currentImage) return null;
 
-  return (
-    <div className="fixed inset-0 z-50 bg-black/95 backdrop-blur-sm flex items-center justify-center">
-      {/* Background overlay - click to close */}
-      <div 
-        className="absolute inset-0 cursor-pointer"
-        onClick={onClose}
-      />
-      
-      {/* Modal content */}
-      <div className="relative w-full h-full flex items-center justify-center p-4">
+  return mounted && isOpen && createPortal(
+    <div 
+      className="fixed inset-0 z-[1000] flex items-center justify-center"
+      onClick={onClose}
+    >
+      <div className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 max-w-[90vw] max-h-[90vh] flex items-center justify-center">
+        {/* Modal Image */}
+        <img
+          src={currentImage.url}
+          alt={currentImage.customName || currentImage.originalName}
+          className="max-w-full max-h-full object-contain rounded-xl shadow-2xl transform transition-all duration-500 ease-out animate-modalZoomIn"
+          onClick={(e) => e.stopPropagation()}
+        />
+        
         {/* Close button */}
-        <button
+        <button 
           onClick={onClose}
-          className="absolute top-6 right-6 z-10 w-12 h-12 bg-white/10 hover:bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center text-white text-2xl font-bold transition-all duration-300 hover:scale-110"
+          className="absolute top-4 right-4 text-white text-4xl z-[1001] hover:scale-110 transition-transform bg-black/30 rounded-full w-12 h-12 flex items-center justify-center"
         >
-          ×
+          &times;
         </button>
 
-        {/* Image counter */}
-        <div className="absolute top-6 left-6 z-10 bg-black/50 backdrop-blur-sm text-white px-4 py-2 rounded-full text-sm">
-          {currentImageIndex + 1} / {images.length}
+        {/* Image details overlay - keep existing hover overlay */}
+        <div className="absolute bottom-0 left-0 right-0 bg-black/60 backdrop-blur-md p-6 text-white rounded-b-xl opacity-0 hover:opacity-100 transition-opacity duration-300">
+          <h3 className="text-2xl font-bold mb-2">
+            {currentImage.customName || currentImage.originalName}
+          </h3>
+          {currentImage.price && (
+            <p className="text-xl text-green-400 font-semibold mb-2">
+              {currentImage.price.startsWith('$') ? currentImage.price : `$${currentImage.price}`}
+            </p>
+          )}
+          {currentImage.description && (
+            <p className="text-sm opacity-80">{currentImage.description}</p>
+          )}
         </div>
+      </div>
 
-        {/* Previous button */}
-        {images.length > 1 && (
+      {/* Navigation buttons - moved outside image container for better visibility */}
+      {images.length > 1 && (
+        <>
           <button
-            onClick={navigatePrevious}
-            className="absolute left-6 z-10 w-16 h-16 bg-white/10 hover:bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center text-white text-2xl font-bold transition-all duration-300 hover:scale-110"
+            onClick={(e) => { e.stopPropagation(); navigatePrevious(); }}
+            className="fixed left-8 top-1/2 transform -translate-y-1/2 z-[1002] w-16 h-16 bg-black/40 hover:bg-black/60 backdrop-blur-sm rounded-full flex items-center justify-center text-white text-2xl font-bold transition-all duration-300 hover:scale-110"
           >
             ←
           </button>
-        )}
-
-        {/* Next button */}
-        {images.length > 1 && (
           <button
-            onClick={navigateNext}
-            className="absolute right-6 z-10 w-16 h-16 bg-white/10 hover:bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center text-white text-2xl font-bold transition-all duration-300 hover:scale-110"
+            onClick={(e) => { e.stopPropagation(); navigateNext(); }}
+            className="fixed right-8 top-1/2 transform -translate-y-1/2 z-[1002] w-16 h-16 bg-black/40 hover:bg-black/60 backdrop-blur-sm rounded-full flex items-center justify-center text-white text-2xl font-bold transition-all duration-300 hover:scale-110"
           >
             →
           </button>
-        )}
+        </>
+      )}
 
-        {/* Main image */}
-        <div className="relative max-w-[90vw] max-h-[90vh] w-full h-full flex items-center justify-center">
-          <img
-            src={currentImage.url}
-            alt={currentImage.customName || currentImage.originalName}
-            className={`
-              max-w-full max-h-full object-contain rounded-lg shadow-2xl
-              transition-all duration-500 ease-in-out
-              ${isTransitioning ? 'opacity-0 scale-95 blur-sm' : 'opacity-100 scale-100 blur-0'}
-              ${imageLoaded ? 'animate-fadeInUp' : ''}
-            `}
-            onLoad={() => setImageLoaded(true)}
-          />
-
-          {/* Loading indicator */}
-          {!imageLoaded && (
-            <div className="absolute inset-0 flex items-center justify-center">
-              <div className="w-12 h-12 border-4 border-white/30 border-t-white rounded-full animate-spin"></div>
+      {/* Persistent Information Panel at Bottom of Screen */}
+      <div className="fixed bottom-0 left-0 right-0 z-[999] bg-white/10 backdrop-blur-lg border-t border-white/20 p-6">
+        <div className="max-w-4xl mx-auto text-center">
+          <h3 className="text-2xl font-bold text-black mb-3">
+            {currentImage.customName || currentImage.originalName}
+          </h3>
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-2">
+            {currentImage.price && (
+              <div className="text-xl font-semibold text-green-400">
+                {currentImage.price.startsWith('$') ? currentImage.price : `$${currentImage.price}`}
+              </div>
+            )}
+            <div className="text-sm text-black/60">
+              Gallery Collection
             </div>
+          </div>
+          {currentImage.description && (
+            <p className="text-black/90 text-lg leading-relaxed max-w-2xl mx-auto">
+              {currentImage.description}
+            </p>
           )}
         </div>
-
-        {/* Image details */}
-        <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2 max-w-2xl text-center">
-          <div className="bg-black/50 backdrop-blur-sm text-white px-6 py-4 rounded-2xl">
-            <h3 className="text-2xl font-bold mb-2">
-              {currentImage.customName || currentImage.originalName}
-            </h3>
-            {currentImage.price && (
-              <p className="text-green-400 font-bold text-lg mb-2">
-                {currentImage.price.startsWith('$') ? currentImage.price : `$${currentImage.price}`}
-              </p>
-            )}
-            {currentImage.description && (
-              <p className="text-white/90 leading-relaxed">
-                {currentImage.description}
-              </p>
-            )}
-          </div>
-        </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }

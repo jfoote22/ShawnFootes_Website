@@ -251,7 +251,7 @@ export default function Dynamic3DCarousel({
                 &times;
               </button>
 
-              {/* Image details overlay */}
+              {/* Image details overlay - keep existing hover overlay */}
               <div className="absolute bottom-0 left-0 right-0 bg-black/60 backdrop-blur-md p-6 text-white rounded-b-xl opacity-0 hover:opacity-100 transition-opacity duration-300">
                 <h3 className="text-2xl font-bold mb-2">
                   {images[modalImageIndex]?.customName || images[modalImageIndex]?.originalName}
@@ -263,6 +263,30 @@ export default function Dynamic3DCarousel({
                 )}
                 {images[modalImageIndex]?.description && (
                   <p className="text-sm opacity-80">{images[modalImageIndex]?.description}</p>
+                )}
+              </div>
+            </div>
+
+            {/* Persistent Information Panel at Bottom of Screen */}
+            <div className="fixed bottom-0 left-0 right-0 z-[999] bg-white/10 backdrop-blur-lg border-t border-white/20 p-6">
+              <div className="max-w-4xl mx-auto text-center">
+                <h3 className="text-2xl font-bold text-black mb-3">
+                  {images[modalImageIndex]?.customName || images[modalImageIndex]?.originalName}
+                </h3>
+                <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-2">
+                  {images[modalImageIndex]?.price && (
+                    <div className="text-xl font-semibold text-green-400">
+                      {images[modalImageIndex]?.price.startsWith('$') ? images[modalImageIndex]?.price : `$${images[modalImageIndex]?.price}`}
+                    </div>
+                  )}
+                  <div className="text-sm text-black/60">
+                    Gallery Collection
+                  </div>
+                </div>
+                {images[modalImageIndex]?.description && (
+                  <p className="text-black/90 text-lg leading-relaxed max-w-2xl mx-auto">
+                    {images[modalImageIndex]?.description}
+                  </p>
                 )}
               </div>
             </div>

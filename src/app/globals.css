@@ -85,6 +85,21 @@ body::before {
   animation: shimmer 3s ease-in-out infinite;
 }
 
+@keyframes modalZoomIn {
+  0% {
+    opacity: 0;
+    transform: scale(0.3) translateY(100px);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.animate-modalZoomIn {
+  animation: modalZoomIn 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
 /* Enhanced Glassmorphism Effects */
 .glass-effect {
   background: rgba(255, 255, 255, 0.1);
