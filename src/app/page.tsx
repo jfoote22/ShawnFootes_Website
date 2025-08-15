@@ -196,7 +196,8 @@ export default function Home() {
 
                     {/* Featured Work & Gallery Layout */}
           <div className="container mx-auto px-8">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start">
+            {/* Featured Work Section */}
+            <div className="lg:grid lg:grid-cols-2 gap-12 items-start">
               {/* Left Side - Featured Artwork */}
               <div className="space-y-6">
                 <h2 className="text-4xl font-bold text-black mb-6">Featured Work</h2>
@@ -249,8 +250,8 @@ export default function Home() {
               </div>
             </div>
 
-                          {/* Right Side - Gallery Carousel */}
-              <div className="space-y-6">
+            {/* Gallery Section - Completely separate on mobile */}
+            <div className="mt-80 lg:mt-0 lg:col-start-2 lg:row-start-1">
                 {/* Header with inline button */}
                 <div className="flex items-center gap-4 mb-6">
                   <h2 className="text-4xl font-bold text-black">Gallery Preview</h2>
@@ -262,8 +263,8 @@ export default function Home() {
                   </Link>
                 </div>
               
-              {/* Modern Swiper Carousel */}
-              <div className="relative rounded-2xl p-6 mt-32 group transition-all duration-500">
+            {/* Modern Swiper Carousel */}
+            <div className="relative rounded-2xl p-6 group transition-all duration-500">
                 <SwiperGalleryCarousel
                   category="gallery"
                   intervalMs={5000}
