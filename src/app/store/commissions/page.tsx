@@ -13,6 +13,7 @@ interface StoreImage {
   customName?: string;
   price?: string;
   description?: string;
+  purchaseUrl?: string;
   category: string;
   uploadedAt: any;
   size: number;
@@ -171,9 +172,23 @@ export default function Commissions() {
                       
                       {/* Description */}
                       {image.description && (
-                        <p className="text-black/80 text-sm leading-relaxed">
+                        <p className="text-black/80 text-sm leading-relaxed mb-4">
                           {image.description}
                         </p>
+                      )}
+                      
+                      {/* Purchase Button */}
+                      {image.purchaseUrl && (
+                        <div className="mt-4">
+                          <a
+                            href={image.purchaseUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-block bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white px-6 py-3 rounded-lg font-semibold text-sm transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl"
+                          >
+                            Purchase
+                          </a>
+                        </div>
                       )}
                     </div>
                   </div>

@@ -11,6 +11,8 @@ import Dynamic3DCarousel from "./components/Dynamic3DCarousel";
 import Dynamic3DCarouselLarge from "./components/Dynamic3DCarouselLarge";
 import SwiperGalleryCarousel from "./components/SwiperGalleryCarousel";
 import GuestBookModal from "./components/GuestBookModal";
+import BookImage from "./components/BookImage";
+import AnimatedBookBanner from "./components/AnimatedBookBanner";
 
 export default function Home() {
   const [backgroundImage, setBackgroundImage] = useState<string | null>(null);
@@ -20,6 +22,7 @@ export default function Home() {
     title: "About This Piece",
     content: `"Art is Alchemy" represents the transformative power of artistic creation. This mixed media piece combines traditional techniques with modern experimentation, embodying the philosophy that art has the ability to transmute ordinary materials into something extraordinary.`
   });
+  const [bannerPurchaseUrl, setBannerPurchaseUrl] = useState<string>('');
 
   const loadFeaturedText = async () => {
     try {
@@ -38,6 +41,20 @@ export default function Home() {
     }
   };
 
+  const loadBannerPurchaseUrl = async () => {
+    try {
+      if (!db) return;
+      
+      const urlDoc = await getDoc(doc(db, 'website-settings', 'banner-purchase-url'));
+      if (urlDoc.exists()) {
+        const data = urlDoc.data();
+        setBannerPurchaseUrl(data.url || '');
+      }
+    } catch (error) {
+      console.error('Error loading banner purchase URL:', error);
+    }
+  };
+
   useEffect(() => {
     // Load background image from localStorage
     const savedBackground = localStorage.getItem('websiteBackgroundImage');
@@ -47,10 +64,16 @@ export default function Home() {
     
     // Load featured text from Firebase
     loadFeaturedText();
+    
+    // Load banner purchase URL
+    loadBannerPurchaseUrl();
   }, []);
 
   return (
     <main className="min-h-screen relative">
+      {/* Animated Book Banner */}
+      <AnimatedBookBanner />
+      
       {/* Dynamic Background Image */}
       {backgroundImage && (
         <div 
@@ -462,6 +485,73 @@ export default function Home() {
                     >
                       Previous Collaborations
                     </a>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Book Section */}
+          <div className="container mx-auto px-8 mt-40" id="book">
+            <div className="text-center mb-16">
+              <h2 className="text-4xl font-bold text-black mb-6">The Super Spectacular Wildly Fantastic Extraordinarily Amazing Book of Imagination</h2>
+              <p className="text-xl text-black/80 max-w-3xl mx-auto">
+                Embark on a spectacular, wildly fantastic adventure
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+              {/* Left Side - Book Image */}
+              <div className="flex justify-center items-center">
+                <div className="relative">
+                  <BookImage
+                    category="collaborations"
+                    className="w-88 h-[26rem] rounded-2xl shadow-2xl"
+                  />
+                </div>
+              </div>
+              
+              {/* Right Side - Book Content */}
+              <div className="space-y-6">
+                <h3 className="text-3xl font-bold text-black">Unlock the Power of Your Imagination</h3>
+                <div className="space-y-4 text-lg text-black/80 leading-relaxed">
+                  <p>
+                    Join us on a spectacular, wildly fantastic adventure that will transform the way you think about creativity. 
+                    This extraordinary book is your guide to discovering new and exciting ways to unleash your imagination.
+                  </p>
+                  <p>
+                    Learn powerful techniques, explore creative exercises, and discover proven methods that will 
+                    help you tap into your limitless creative potential and bring your wildest ideas to life.
+                  </p>
+                  <p>
+                    <strong>Ready to begin your journey?</strong> This amazing adventure in imagination awaits, 
+                    filled with practical wisdom and inspiring insights to fuel your creative spirit.
+                  </p>
+                </div>
+                
+                {/* Book CTA */}
+                <div className="pt-4 space-y-4">
+                  {bannerPurchaseUrl ? (
+                    <a
+                      href={bannerPurchaseUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-block bg-white/20 hover:bg-white/30 backdrop-blur-sm text-black px-8 py-4 rounded-full text-lg font-semibold transition-all duration-300 border border-white/30 hover:border-white/50"
+                    >
+                      Purchase Book
+                    </a>
+                  ) : (
+                    <button className="bg-white/20 hover:bg-white/30 backdrop-blur-sm text-black px-8 py-4 rounded-full text-lg font-semibold transition-all duration-300 border border-white/30 hover:border-white/50">
+                      Purchase Book
+                    </button>
+                  )}
+                  <div>
+                    <Link 
+                      href="/book"
+                      className="inline-block bg-black/10 hover:bg-black/20 backdrop-blur-sm text-black px-8 py-4 rounded-full text-lg font-semibold transition-all duration-300 border border-black/20 hover:border-black/30"
+                    >
+                      Learn More
+                    </Link>
                   </div>
                 </div>
               </div>

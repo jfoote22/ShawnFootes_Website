@@ -23,6 +23,7 @@ interface ImageData {
   customName?: string;
   price?: string;
   description?: string;
+  purchaseUrl?: string;
   sortOrder?: number;
   // Standard fields
   category: string;
@@ -54,13 +55,18 @@ export default function SimpleAdminPanel({ isOpen, onClose }: AdminPanelProps) {
   const [guestBookStats, setGuestBookStats] = useState({ totalVisitors: 0, recentVisitors: 0 });
   const [orphanedImageFinderOpen, setOrphanedImageFinderOpen] = useState(false);
   const [editingImageId, setEditingImageId] = useState<string | null>(null);
-  const [editFormData, setEditFormData] = useState({ customName: '', price: '', description: '' });
+  const [editFormData, setEditFormData] = useState({ customName: '', price: '', description: '', purchaseUrl: '' });
   const [updateLoading, setUpdateLoading] = useState<string | null>(null);
   
   // Featured text editing state
   const [featuredText, setFeaturedText] = useState({ title: 'About This Piece', content: '' });
   const [editingFeaturedText, setEditingFeaturedText] = useState(false);
   const [featuredTextLoading, setFeaturedTextLoading] = useState(false);
+  
+  // Banner purchase URL state
+  const [bannerPurchaseUrl, setBannerPurchaseUrl] = useState('');
+  const [editingBannerUrl, setEditingBannerUrl] = useState(false);
+  const [bannerUrlLoading, setBannerUrlLoading] = useState(false);
 
   const loadImages = useCallback(async () => {
     setLoading(true);
@@ -118,6 +124,7 @@ export default function SimpleAdminPanel({ isOpen, onClose }: AdminPanelProps) {
       if (activeTab === 'website-settings') {
         loadWebsiteBackground();
         loadGuestBookStats();
+        loadBannerPurchaseUrl();
       }
       if (activeTab === 'featured') {
         loadFeaturedText();
@@ -211,13 +218,14 @@ export default function SimpleAdminPanel({ isOpen, onClose }: AdminPanelProps) {
     setEditFormData({
       customName: image.customName || image.originalName.replace(/\.[^/.]+$/, ""),
       price: image.price || '',
-      description: image.description || ''
+      description: image.description || '',
+      purchaseUrl: image.purchaseUrl || ''
     });
   };
 
   const handleCancelEdit = () => {
     setEditingImageId(null);
-    setEditFormData({ customName: '', price: '', description: '' });
+    setEditFormData({ customName: '', price: '', description: '', purchaseUrl: '' });
   };
 
   const handleUpdateImage = async (imageId: string) => {
@@ -226,7 +234,8 @@ export default function SimpleAdminPanel({ isOpen, onClose }: AdminPanelProps) {
       const updateData: Partial<ImageData> = {
         customName: editFormData.customName.trim() || undefined,
         price: editFormData.price.trim() || undefined,
-        description: editFormData.description.trim() || undefined
+        description: editFormData.description.trim() || undefined,
+        purchaseUrl: editFormData.purchaseUrl.trim() || undefined
       };
 
       await updateDoc(doc(db, 'images', imageId), updateData);
@@ -237,7 +246,7 @@ export default function SimpleAdminPanel({ isOpen, onClose }: AdminPanelProps) {
       ));
 
       setEditingImageId(null);
-      setEditFormData({ customName: '', price: '', description: '' });
+      setEditFormData({ customName: '', price: '', description: '', purchaseUrl: '' });
     } catch (error) {
       console.error('Error updating image:', error);
       alert('Error updating image. Check console for details.');
@@ -349,6 +358,40 @@ export default function SimpleAdminPanel({ isOpen, onClose }: AdminPanelProps) {
       alert('Error saving featured text. Check console for details.');
     } finally {
       setFeaturedTextLoading(false);
+    }
+  };
+
+  const loadBannerPurchaseUrl = async () => {
+    try {
+      if (!db) return;
+      
+      const urlDoc = await getDoc(doc(db, 'website-settings', 'banner-purchase-url'));
+      if (urlDoc.exists()) {
+        const data = urlDoc.data();
+        setBannerPurchaseUrl(data.url || '');
+      }
+    } catch (error) {
+      console.error('Error loading banner purchase URL:', error);
+    }
+  };
+
+  const saveBannerPurchaseUrl = async () => {
+    try {
+      setBannerUrlLoading(true);
+      if (!db) return;
+      
+      await setDoc(doc(db, 'website-settings', 'banner-purchase-url'), {
+        url: bannerPurchaseUrl,
+        updatedAt: new Date()
+      });
+      
+      setEditingBannerUrl(false);
+      alert('Banner purchase URL updated successfully!');
+    } catch (error) {
+      console.error('Error saving banner purchase URL:', error);
+      alert('Error saving banner purchase URL. Check console for details.');
+    } finally {
+      setBannerUrlLoading(false);
     }
   };
 
@@ -702,6 +745,71 @@ export default function SimpleAdminPanel({ isOpen, onClose }: AdminPanelProps) {
               </div>
             </div>
 
+            {/* Banner Purchase URL Management */}
+            <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/20">
+              <h3 className="text-xl font-semibold text-black mb-4">Banner Purchase URL</h3>
+              <p className="text-black/80 text-sm mb-4">
+                Set the URL that the "Purchase Now" button in the animated banner will link to.
+              </p>
+              
+              {editingBannerUrl ? (
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-black mb-2">Purchase URL:</label>
+                    <input
+                      type="url"
+                      value={bannerPurchaseUrl}
+                      onChange={(e) => setBannerPurchaseUrl(e.target.value)}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      placeholder="https://example.com/purchase-page"
+                    />
+                  </div>
+                  <div className="flex space-x-2">
+                    <button
+                      onClick={saveBannerPurchaseUrl}
+                      disabled={bannerUrlLoading}
+                      className="px-4 py-2 bg-green-500 hover:bg-green-600 disabled:bg-green-300 text-white rounded-lg text-sm transition-colors"
+                    >
+                      {bannerUrlLoading ? 'Saving...' : 'Save URL'}
+                    </button>
+                    <button
+                      onClick={() => {
+                        setEditingBannerUrl(false);
+                        loadBannerPurchaseUrl(); // Reset to original value
+                      }}
+                      disabled={bannerUrlLoading}
+                      className="px-4 py-2 bg-gray-500 hover:bg-gray-600 disabled:bg-gray-300 text-white rounded-lg text-sm transition-colors"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  <div className="bg-gray-50 rounded-lg p-4">
+                    <p className="text-black/80 text-sm">
+                      <strong>Current URL:</strong> {bannerPurchaseUrl || 'Not set'}
+                    </p>
+                    {bannerPurchaseUrl && (
+                      <a 
+                        href={bannerPurchaseUrl} 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="text-blue-600 hover:text-blue-800 text-sm mt-1 inline-block"
+                      >
+                        🔗 Test link
+                      </a>
+                    )}
+                  </div>
+                  <button
+                    onClick={() => setEditingBannerUrl(true)}
+                    className="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg text-sm transition-colors"
+                  >
+                    Edit Banner URL
+                  </button>
+                </div>
+              )}
+            </div>
 
             <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/20">
               <h4 className="text-lg font-semibold text-black mb-3">Tips for Background Images</h4>
@@ -845,6 +953,19 @@ export default function SimpleAdminPanel({ isOpen, onClose }: AdminPanelProps) {
                                       placeholder="Brief description"
                                     />
                                   </div>
+
+                                  <div className="md:col-span-2">
+                                    <label className="block text-xs font-medium text-gray-700 mb-1">
+                                      Purchase URL
+                                    </label>
+                                    <input
+                                      type="url"
+                                      value={editFormData.purchaseUrl}
+                                      onChange={(e) => setEditFormData(prev => ({ ...prev, purchaseUrl: e.target.value }))}
+                                      className="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
+                                      placeholder="https://example.com/purchase-link"
+                                    />
+                                  </div>
                                 </div>
 
                                 {/* Edit Actions */}
@@ -893,6 +1014,9 @@ export default function SimpleAdminPanel({ isOpen, onClose }: AdminPanelProps) {
                                     )}
                                     {image.description && (
                                       <div className="truncate" title={image.description}>📝 {image.description}</div>
+                                    )}
+                                    {image.purchaseUrl && (
+                                      <div className="truncate" title={image.purchaseUrl}>🔗 {image.purchaseUrl}</div>
                                     )}
                                     <div>📁 {image.filename}</div>
                                     <div>📅 {formatDate(image.uploadedAt)}</div>

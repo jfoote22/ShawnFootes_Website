@@ -80,12 +80,12 @@ export default function Dynamic3DCarousel({
         return dateB.getTime() - dateA.getTime();
       });
 
-      // Take the requested count and duplicate if needed for 3D effect
-      const selectedImages = imageList.slice(0, count);
+      // Skip the first image and take the requested count
+      const selectedImages = imageList.slice(1, count + 1);
       if (selectedImages.length > 0 && selectedImages.length < count) {
         // Duplicate images to fill the carousel if we don't have enough
         while (selectedImages.length < count) {
-          selectedImages.push(...imageList.slice(0, count - selectedImages.length));
+          selectedImages.push(...imageList.slice(1, count - selectedImages.length + 1));
         }
       }
 
