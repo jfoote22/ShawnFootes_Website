@@ -749,7 +749,7 @@ export default function SimpleAdminPanel({ isOpen, onClose }: AdminPanelProps) {
             <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/20">
               <h3 className="text-xl font-semibold text-black mb-4">Banner Purchase URL</h3>
               <p className="text-black/80 text-sm mb-4">
-                Set the URL that the "Purchase Now" button in the animated banner will link to.
+                Set the URL that the &quot;Purchase Now&quot; button in the animated banner will link to.
               </p>
               
               {editingBannerUrl ? (
