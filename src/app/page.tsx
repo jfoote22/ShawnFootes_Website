@@ -442,9 +442,9 @@ export default function Home() {
               </p>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-12 items-center">
               {/* Left Side - Collaboration Carousel */}
-              <div className="flex justify-center items-center">
+              <div className="flex justify-center items-center lg:col-span-2" style={{ marginLeft: '-60px' }}>
                 <div className="relative">
                   <Dynamic3DCarousel
                     category="collaborations"
@@ -456,7 +456,7 @@ export default function Home() {
               </div>
               
               {/* Right Side - Collaboration Content */}
-              <div className="space-y-6">
+              <div className="space-y-6 lg:col-span-1">
                 <h3 className="text-3xl font-bold text-black">Let&apos;s Create Together</h3>
                 <div className="space-y-4 text-lg text-black/80 leading-relaxed">
                   <p>
