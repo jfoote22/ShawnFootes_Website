@@ -95,7 +95,9 @@ export default function BookImage({
       <div className={`bg-gradient-to-br from-purple-400 to-pink-400 rounded-xl flex items-center justify-center ${className}`}>
         <div className="text-center text-white p-8">
           <div className="text-4xl mb-4">📚</div>
-          <p className="font-semibold">Book Image</p>
+          <p className="font-semibold text-lg mb-2">Book Cover Image</p>
+          <p className="text-sm opacity-90">Upload book images</p>
+          <p className="text-xs opacity-75">through the admin panel</p>
         </div>
       </div>
     );

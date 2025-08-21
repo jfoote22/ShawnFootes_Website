@@ -91,8 +91,8 @@ export default function AnimatedBookBanner() {
             
             {/* Title and Description */}
             <div className="max-w-2xl">
-              <h3 className="text-5xl font-black text-black mb-4 drop-shadow-lg leading-tight">
-                The Super Spectacular Book of Imagination!
+              <h3 className="text-3xl font-black text-black mb-4 drop-shadow-lg leading-tight">
+                The Super Spectacular Wildly Fantastic Extraordinarily Amazing Book of Imagination!
               </h3>
               <p className="text-2xl font-bold text-black/90 leading-relaxed">
                 Embark on your wildly fantastic adventure today!
@@ -123,8 +123,8 @@ export default function AnimatedBookBanner() {
                 className="w-24 h-32 rounded-lg shadow-xl border-2 border-white/50"
               />
             </div>
-            <h3 className="text-2xl font-black text-black mb-2 drop-shadow-lg leading-tight">
-              The Super Spectacular Book of Imagination!
+            <h3 className="text-lg font-black text-black mb-2 drop-shadow-lg leading-tight">
+              The Super Spectacular Wildly Fantastic Extraordinarily Amazing Book of Imagination!
             </h3>
             <p className="text-lg font-bold text-black/90 mb-4">
               Embark on your wildly fantastic adventure today!

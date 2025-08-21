@@ -505,7 +505,8 @@ export default function Home() {
               <div className="flex justify-center items-center">
                 <div className="relative">
                   <BookImage
-                    category="collaborations"
+                    category="book"
+                    subcategory="cover-images"
                     className="w-88 h-[26rem] rounded-2xl shadow-2xl"
                   />
                 </div>

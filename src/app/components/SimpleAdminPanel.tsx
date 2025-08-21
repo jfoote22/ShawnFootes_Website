@@ -33,11 +33,12 @@ interface ImageData {
   type: string;
 }
 
-type TabType = 'featured' | 'gallery' | 'store' | 'collaborations' | 'about' | 'website-settings';
+type TabType = 'featured' | 'gallery' | 'store' | 'collaborations' | 'about' | 'book' | 'website-settings';
 type StoreSubcategory = 'original-works' | 'prints' | 'apparel' | 'commissions' | 'nfts';
 type FeaturedSubcategory = 'hero-images' | 'showcase-pieces' | 'featured-collections' | 'spotlight-works';
 type CollaborationsSubcategory = 'partnerships' | 'joint-projects' | 'gallery-collaborations' | 'artist-networks';
 type AboutSubcategory = 'studio-shots' | 'artist-portraits' | 'work-in-progress' | 'behind-scenes' | 'press-coverage';
+type BookSubcategory = 'cover-images' | 'interior-pages' | 'promotional-materials' | 'process-photos';
 
 export default function SimpleAdminPanel({ isOpen, onClose }: AdminPanelProps) {
   const { isAdmin } = useContext(AuthContext);
@@ -46,6 +47,7 @@ export default function SimpleAdminPanel({ isOpen, onClose }: AdminPanelProps) {
   const [featuredSubcategory, setFeaturedSubcategory] = useState<FeaturedSubcategory>('hero-images');
   const [collaborationsSubcategory, setCollaborationsSubcategory] = useState<CollaborationsSubcategory>('partnerships');
   const [aboutSubcategory, setAboutSubcategory] = useState<AboutSubcategory>('studio-shots');
+  const [bookSubcategory, setBookSubcategory] = useState<BookSubcategory>('cover-images');
   const [images, setImages] = useState<ImageData[]>([]);
   const [loading, setLoading] = useState(false);
   const [deleteLoading, setDeleteLoading] = useState<string | null>(null);
@@ -91,6 +93,8 @@ export default function SimpleAdminPanel({ isOpen, onClose }: AdminPanelProps) {
         imageList = imageList.filter(img => img.subcategory === collaborationsSubcategory);
       } else if (activeTab === 'about' && aboutSubcategory) {
         imageList = imageList.filter(img => img.subcategory === aboutSubcategory);
+      } else if (activeTab === 'book' && bookSubcategory) {
+        imageList = imageList.filter(img => img.subcategory === bookSubcategory);
       }
 
       // Sort by custom order first, then by upload date
@@ -115,7 +119,7 @@ export default function SimpleAdminPanel({ isOpen, onClose }: AdminPanelProps) {
     } finally {
       setLoading(false);
     }
-  }, [activeTab, storeSubcategory, featuredSubcategory, collaborationsSubcategory, aboutSubcategory]);
+  }, [activeTab, storeSubcategory, featuredSubcategory, collaborationsSubcategory, aboutSubcategory, bookSubcategory]);
 
   // Load images when tab changes
   useEffect(() => {
@@ -130,7 +134,7 @@ export default function SimpleAdminPanel({ isOpen, onClose }: AdminPanelProps) {
         loadFeaturedText();
       }
     }
-  }, [activeTab, storeSubcategory, featuredSubcategory, collaborationsSubcategory, aboutSubcategory, isOpen, isAdmin, loadImages]);
+  }, [activeTab, storeSubcategory, featuredSubcategory, collaborationsSubcategory, aboutSubcategory, bookSubcategory, isOpen, isAdmin, loadImages]);
 
   const loadWebsiteBackground = () => {
     const currentBackground = localStorage.getItem('websiteBackgroundImage');
@@ -440,6 +444,7 @@ export default function SimpleAdminPanel({ isOpen, onClose }: AdminPanelProps) {
             { key: 'store', label: 'Store Products', description: 'Product images for your store' },
             { key: 'collaborations', label: 'Collaborations', description: 'Partnerships, joint projects, and gallery collaborations' },
             { key: 'about', label: 'About the Artist', description: 'Studio shots, artist portraits, work in progress, and behind-the-scenes' },
+            { key: 'book', label: 'Book Images', description: 'Cover images, interior pages, promotional materials, and process photos' },
             { key: 'website-settings', label: 'Website Settings', description: 'Manage website background image' }
           ] as const).map(({ key, label, description }) => (
             <button
@@ -622,6 +627,34 @@ export default function SimpleAdminPanel({ isOpen, onClose }: AdminPanelProps) {
               <strong> Work in Progress:</strong> Artwork during creation process • 
               <strong> Behind Scenes:</strong> Creative process and daily studio life • 
               <strong> Press Coverage:</strong> News articles, interviews, and press materials
+            </div>
+          </div>
+        )}
+
+        {/* Book Subcategory */}
+        {activeTab === 'book' && (
+          <div className="p-4 border-b bg-gray-50">
+            <label className="block text-sm font-medium mb-2">Book Category:</label>
+            <div className="flex gap-2 mb-3">
+              {(['cover-images', 'interior-pages', 'promotional-materials', 'process-photos'] as BookSubcategory[]).map((sub) => (
+                <button
+                  key={sub}
+                  onClick={() => setBookSubcategory(sub)}
+                  className={`px-3 py-1 rounded text-sm ${
+                    bookSubcategory === sub
+                      ? 'bg-blue-500 text-white'
+                      : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                  }`}
+                >
+                  {sub.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')}
+                </button>
+              ))}
+            </div>
+            <div className="text-sm text-gray-600">
+              <strong>Cover Images:</strong> Book covers and front/back cover designs • 
+              <strong> Interior Pages:</strong> Sample pages, layouts, and content previews • 
+              <strong> Promotional Materials:</strong> Marketing images, banners, and social media graphics • 
+              <strong> Process Photos:</strong> Behind-the-scenes creation, writing, and design process
             </div>
           </div>
         )}
@@ -843,6 +876,7 @@ export default function SimpleAdminPanel({ isOpen, onClose }: AdminPanelProps) {
                     activeTab === 'featured' ? featuredSubcategory : 
                     activeTab === 'collaborations' ? collaborationsSubcategory :
                     activeTab === 'about' ? aboutSubcategory :
+                    activeTab === 'book' ? bookSubcategory :
                     undefined
                   }
                   onUploadComplete={loadImages}
